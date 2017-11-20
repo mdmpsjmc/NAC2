@@ -21,8 +21,7 @@ namespace AspergillosisEPR
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AspergillosisContext>(options =>
-                        options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
-            );
+                        options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.UseRowNumberForPaging()));
             services.AddTransient<PatientViewModel>();
             services.AddMvc();
         }
