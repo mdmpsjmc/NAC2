@@ -13306,6 +13306,9 @@
   },
   "project": {
     "version": "1.0.0",
+    "restoreSettings": {
+      "hideWarningsAndErrors": true
+    },
     "restore": {
       "projectUniqueName": "C:\\Users\\user\\source\\repos\\AspergillosisEPR\\AspergillosisEPR\\AspergillosisEPR.csproj",
       "projectName": "AspergillosisEPR",
@@ -13341,19 +13344,6 @@
     "frameworks": {
       "netcoreapp2.0": {
         "dependencies": {
-          "Microsoft.NETCore.App": {
-            "target": "Package",
-            "version": "2.0",
-            "autoReferenced": true
-          },
-          "BeginCollectionItemCore": {
-            "target": "Package",
-            "version": "1.0.8"
-          },
-          "Microsoft.AspNetCore.All": {
-            "target": "Package",
-            "version": "2.0.3"
-          },
           "Microsoft.EntityFrameworkCore.Tools": {
             "target": "Package",
             "version": "2.0.1"
@@ -13362,13 +13352,26 @@
             "target": "Package",
             "version": "2.0.1"
           },
+          "System.Linq.Dynamic.Core": {
+            "target": "Package",
+            "version": "1.0.7.12"
+          },
+          "Microsoft.NETCore.App": {
+            "target": "Package",
+            "version": "2.0",
+            "autoReferenced": true
+          },
           "System.Data.SqlClient": {
             "target": "Package",
             "version": "4.4.0"
           },
-          "System.Linq.Dynamic.Core": {
+          "BeginCollectionItemCore": {
             "target": "Package",
-            "version": "1.0.7.12"
+            "version": "1.0.8"
+          },
+          "Microsoft.AspNetCore.All": {
+            "target": "Package",
+            "version": "2.0.3"
           }
         },
         "imports": [
