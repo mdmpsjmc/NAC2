@@ -70,13 +70,17 @@ namespace AspergillosisEPR.Models
         public ICollection<PatientTestResult> PatientTestResults { get; set; }
         public ICollection<PatientMRCScore> PatientMRCScores { get; set; } = new List<PatientMRCScore>();
         public ICollection<PatientICD10Diagnosis> PatientICD10Diagnoses { get; set; } = new List<PatientICD10Diagnosis>();
+        public ICollection<PatientRadiologyNote> PatientRadiologyNotes { get; set; } = new List<PatientRadiologyNote>();
+        public ICollection<PatientHospitalAdmission> PatientHospitalAdmissions { get; set; } = new List<PatientHospitalAdmission>();
+        public ICollection<CauseOfDeath> CausesOfDeaths { get; set; } = new List<CauseOfDeath>();
 
-        [Display(Name = "Full Name")]
+    [Display(Name = "Full Name")]
         public string FullName
         {
             get { return LastName + ", " + FirstName; }
         }
         public static readonly List<string> Genders = new List<string>() { "male", "female" };
+        public static readonly List<string> CPABands = new List<string>() { "1", "2","3" };
 
         public int Age()
         {            
@@ -89,6 +93,18 @@ namespace AspergillosisEPR.Models
                 var deathCalculator = new DatesCalculator(DOB, DateOfDeath.Value);
                 return deathCalculator.Years();
             }                       
+        }
+
+        public string BucketDistance()
+        {
+            if (DistanceFromWythenshawe <= 25) return "0-25";
+            if (DistanceFromWythenshawe > 25 && DistanceFromWythenshawe <= 75) return "25-75";
+            if (DistanceFromWythenshawe > 75 && DistanceFromWythenshawe <= 150) return "75-150";
+            if (DistanceFromWythenshawe > 150) return "150+";
+            else
+            {
+                return "0";
+            }
         }
 
         public bool IsDeceased()

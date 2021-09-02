@@ -13,6 +13,7 @@ namespace AspergillosisEPR.Models.Patients
         public decimal? Weight { get; set; } 
         public decimal? Height { get; set; }
         public DateTime DateTaken { get; set; }
+        public string SourceInfo { get; set; }
 
         override public List<string> ExcludedProperties()
         {
@@ -20,6 +21,18 @@ namespace AspergillosisEPR.Models.Patients
             {
                 "PatientId", "Patient"
             };
+        }
+
+        public string BMI()
+        {
+          if (Height != null && Weight != null && Height != 0 && Weight != 0)
+        {
+          var bmi = Weight / ((Height / 100) * (Height / 100));
+          return Math.Round(bmi.Value, 2).ToString();
+        }
+        else return "";
+          
+          
         }
     }
 }

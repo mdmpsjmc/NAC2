@@ -236,6 +236,28 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                     b.ToTable("CaseReportFormSections");
                 });
 
+            modelBuilder.Entity("AspergillosisEPR.Models.CauseOfDeath", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Description");
+
+                    b.Property<int?>("DiagnosisTypeId");
+
+                    b.Property<int>("NumericOrder");
+
+                    b.Property<string>("Order");
+
+                    b.Property<int>("PatientId");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("CauseOfDeaths");
+                });
+
             modelBuilder.Entity("AspergillosisEPR.Models.DbImport", b =>
                 {
                     b.Property<int>("ID")
@@ -588,6 +610,8 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
 
                     b.Property<string>("ComparisionCharacter");
 
+                    b.Property<DateTime?>("CreatedDate");
+
                     b.Property<DateTime>("DateReceived");
 
                     b.Property<DateTime>("DateTaken");
@@ -599,6 +623,8 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                     b.Property<int>("PatientId");
 
                     b.Property<decimal>("ResultValue");
+
+                    b.Property<decimal>("SourceSystemGUID");
 
                     b.Property<int>("UnitOfMeasurementId");
 
@@ -688,10 +714,34 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                     b.ToTable("PatientHaematologies");
                 });
 
+            modelBuilder.Entity("AspergillosisEPR.Models.Patients.PatientHospitalAdmission", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<bool>("ICU");
+
+                    b.Property<bool>("MoreThanOneAdmission");
+
+                    b.Property<bool>("OneOrMoreAdmissions");
+
+                    b.Property<int>("PatientId");
+
+                    b.Property<bool>("PreVisit");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("PatientHospitalAdmissions");
+                });
+
             modelBuilder.Entity("AspergillosisEPR.Models.Patients.PatientICD10Diagnosis", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime?>("CreatedDate");
 
                     b.Property<string>("DiagnosisCode");
 
@@ -715,6 +765,8 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime?>("CreatedDate");
 
                     b.Property<DateTime>("DateTaken");
 
@@ -749,6 +801,8 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                     b.Property<decimal?>("Height");
 
                     b.Property<int>("PatientId");
+
+                    b.Property<string>("SourceInfo");
 
                     b.Property<decimal?>("Weight");
 
@@ -820,11 +874,17 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
 
                     b.Property<DateTime>("FirstSeenAtNAC");
 
+                    b.Property<string>("FollowUp3MonthsDrug");
+
+                    b.Property<string>("InitialDrug");
+
                     b.Property<DateTime?>("LastObservationPoint");
 
                     b.Property<int>("PatientId");
 
                     b.Property<DateTime?>("ProbableStartOfDisease");
+
+                    b.Property<DateTime?>("ReferralDate");
 
                     b.HasKey("ID");
 
@@ -838,7 +898,15 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<int?>("Age");
+
+                    b.Property<DateTime?>("CreatedDate");
+
                     b.Property<DateTime?>("DateTaken");
+
+                    b.Property<int?>("Height");
+
+                    b.Property<double?>("NormalValue");
 
                     b.Property<int>("PatientId");
 
@@ -847,6 +915,8 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                     b.Property<int>("PulmonaryFunctionTestId");
 
                     b.Property<decimal>("ResultValue");
+
+                    b.Property<string>("SourceInfo");
 
                     b.HasKey("ID");
 
@@ -898,6 +968,33 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                     b.HasIndex("TreatmentResponseId");
 
                     b.ToTable("PatientRadiologyFindings");
+                });
+
+            modelBuilder.Entity("AspergillosisEPR.Models.Patients.PatientRadiologyNote", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime?>("CreatedDate");
+
+                    b.Property<DateTime>("DateTaken");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<int>("PatientId");
+
+                    b.Property<int>("RadiologyTypeId");
+
+                    b.Property<decimal>("SourceSystemGUID");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("RadiologyTypeId");
+
+                    b.ToTable("PatientRadiologyNotes");
                 });
 
             modelBuilder.Entity("AspergillosisEPR.Models.Patients.PatientSmokingDrinkingStatus", b =>
@@ -997,6 +1094,8 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime?>("CreatedDate");
 
                     b.Property<DateTime>("DateTaken");
 
@@ -1121,6 +1220,8 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Description");
 
                     b.Property<string>("Name");
 
@@ -1282,7 +1383,7 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
 
             modelBuilder.Entity("AspergillosisEPR.Models.UKPostCode", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<long>("ID")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Code");
@@ -1455,6 +1556,14 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("AspergillosisEPR.Models.CauseOfDeath", b =>
+                {
+                    b.HasOne("AspergillosisEPR.Models.Patient")
+                        .WithMany("CausesOfDeaths")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("AspergillosisEPR.Models.MedicalTrials.MedicalTrial", b =>
                 {
                     b.HasOne("AspergillosisEPR.Models.MedicalTrials.MedicalTrialPrincipalInvestigator", "PrincipalInvestigator")
@@ -1606,6 +1715,14 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("AspergillosisEPR.Models.Patients.PatientHospitalAdmission", b =>
+                {
+                    b.HasOne("AspergillosisEPR.Models.Patient")
+                        .WithMany("PatientHospitalAdmissions")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("AspergillosisEPR.Models.Patients.PatientICD10Diagnosis", b =>
                 {
                     b.HasOne("AspergillosisEPR.Models.Patient")
@@ -1663,7 +1780,7 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
 
             modelBuilder.Entity("AspergillosisEPR.Models.Patients.PatientNACDates", b =>
                 {
-                    b.HasOne("AspergillosisEPR.Models.Patient")
+                    b.HasOne("AspergillosisEPR.Models.Patient", "Patient")
                         .WithMany("PatientNACDates")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -1671,7 +1788,7 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
 
             modelBuilder.Entity("AspergillosisEPR.Models.Patients.PatientPulmonaryFunctionTest", b =>
                 {
-                    b.HasOne("AspergillosisEPR.Models.Patient")
+                    b.HasOne("AspergillosisEPR.Models.Patient", "Patient")
                         .WithMany("PatientPulmonaryFunctionTests")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -1714,6 +1831,19 @@ namespace AspergillosisEPR.Migrations.Aspergillosis
                     b.HasOne("AspergillosisEPR.Models.Radiology.TreatmentResponse", "TreatmentResponse")
                         .WithMany()
                         .HasForeignKey("TreatmentResponseId");
+                });
+
+            modelBuilder.Entity("AspergillosisEPR.Models.Patients.PatientRadiologyNote", b =>
+                {
+                    b.HasOne("AspergillosisEPR.Models.Patient")
+                        .WithMany("PatientRadiologyNotes")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("AspergillosisEPR.Models.Radiology.RadiologyType", "RadiologyType")
+                        .WithMany()
+                        .HasForeignKey("RadiologyTypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("AspergillosisEPR.Models.Patients.PatientSmokingDrinkingStatus", b =>
