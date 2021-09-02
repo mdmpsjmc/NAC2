@@ -14,7 +14,12 @@ namespace AspergillosisEPR.Search
                 { "Patient", "Patient" },
                 { "Diagnosis", "PatientDiagnosis" },
                 { "Drug", "PatientDrug" },
-                { "Radiology", "PatientRadiologyFinding" }
+                { "Radiology", "PatientRadiologyFinding" },
+                { "Medical Trial", "PatientMedicalTrial" },
+                { "Surgery", "PatientSurgery" },
+                { "Allergy or Intolerance", "PatientAllergicIntoleranceItem" },
+                { "Smoking Status", "PatientSmokingDrinkingStatus" },
+                { "NAC dates", "PatientNACDates"}
             };
         }
 

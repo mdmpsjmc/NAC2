@@ -18,12 +18,13 @@ namespace AspergillosisEPR.Models.Patients
         [Display(Name = "Date Taken")]
         [DisplayFormat(DataFormatString = "{dd-MM-yyyy}")]
         public DateTime DateTaken { get; set;  }
+        public string OriginalImportedId { get; set; }
 
         override public List<string> ExcludedProperties()
         {
             return new List<string>()
             {
-                "PatientId", "Patient"
+                "PatientId", "Patient", "OriginalImportedId"
             };
         }
 

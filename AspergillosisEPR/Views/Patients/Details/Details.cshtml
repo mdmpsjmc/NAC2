@@ -3,19 +3,35 @@
     <div class="col-sm-12">
         <div class="row">
             <div class="col-sm-2 profile-pic">
-                <img src="/img/avatars/@(Model.Patient.Gender).png" alt="patient">
+                @if (!string.IsNullOrEmpty(Model.Patient.Gender))
+                {
+                    <img src="/img/avatars/@(Model.Patient.Gender).png" alt="patient">
+                }
+               
             </div>
             <div class="col-sm-6">
                 <h1>
                     @(Model.Patient.FirstName) <span class="semi-bold">@(Model.Patient.LastName)</span>
                     <br>
-                    <small><strong> @(Model.Patient.RM2Number)</strong></small>
+                    <small><strong>RM2: @(Model.Patient.RM2Number)</strong></small>
+                    @if (!string.IsNullOrEmpty(Model.Patient.NhsNumber))
+                    {
+                        <br><small><strong>NHS: @(Model.Patient.NhsNumber)</strong></small>
+                    }
                 </h1>
                 <ul class="list-unstyled">
                     <li>
                         <p class="text-muted">
-                            <i class="fa fa-venus-mars"></i>&nbsp;&nbsp;<span class="txt-color-darken">@(Model.Patient.Gender.ToUpper())</span>
+                            <i class="fa fa-info-circle"></i>&nbsp;&nbsp;<span class="txt-color-darken">System ID:@(Model.Patient.ID)</span>
                         </p>
+                    </li>
+                    <li>
+                        @if (!string.IsNullOrEmpty(Model.Patient.Gender))
+                        {
+                            <p class="text-muted">
+                                <i class="fa fa-venus-mars"></i>&nbsp;&nbsp;<span class="txt-color-darken">@(Model.Patient.Gender.ToUpper())</span>
+                            </p>
+                        }
                     </li>
                     <li>
                         <p class="text-muted">
@@ -37,11 +53,53 @@
                                 <i class="fa fa-bolt"></i>&nbsp;&nbsp;<span class="txt-color-darken">Death:&nbsp;@(Model.Patient.DateOfDeath.Value.ToString("dd/MMM/yyy"))</span>
                             </p>
                         </li>
+                    }
+                    @if (Model.Patient.DistanceFromWythenshawe != 0)
+                    {
+                        <li>
+                            <p class="text-muted">
+                                <i class="fa fa-road"></i>&nbsp;&nbsp;<span class="txt-color-darken">
+                                    Distance from hospital:&nbsp;
+                                    @(Math.Round(Model.Patient.DistanceFromWythenshawe, 2))
+                                </span>
+                            </p>
+                        </li>
+                    }
+
+                    @if (Model.Patient.PatientNACDates.Count() > 0)
+                    {
+                        <li>
+                            <p class="text-muted">
+                                <i class="fa fa-user-md"></i>&nbsp;&nbsp;<span class="txt-color-darken">
+                                    First seen at NAC:&nbsp;
+                                    @(Model.Patient.PatientNACDates.FirstOrDefault()?.FirstSeenAtNAC.ToString("dd/MM/yyyy"))
+                                </span>
+                            </p>
+                        </li>
+                        @if (Model.Patient.PatientNACDates?.FirstOrDefault()?.LastObservationPoint != null)
+                        {
+                            <li>
+                                <p class="text-muted">
+                                    <i class="fa fa-user-md"></i>&nbsp;&nbsp;<span class="txt-color-darken">
+                                        Last observation point:&nbsp;
+                                        @(Model.Patient.PatientNACDates?.FirstOrDefault()?.LastObservationPoint.Value.ToString("dd/MM/yyyy"))
+                                    </span>
+                                </p>
+                            </li>
+                        }
 
                     }
                 </ul>
                 <br>                
-            </div>            
-        </div>
+            </div>     
+            <div class="col col-sm-2 col-md-2 col-lg-2">
+            </div>
+            <div class="col col-sm-10 col-md-10 col-lg-10 pull-right">
+                    @if (!string.IsNullOrEmpty(Model.Patient.GenericNote))
+                    {
+                        <div style="font-style: italic" >@(Model.Patient.GenericNote)</div>
+                    }
+            </div>
+            </div>
     </div>
 </div>

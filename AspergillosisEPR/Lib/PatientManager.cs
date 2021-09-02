@@ -57,9 +57,29 @@ namespace AspergillosisEPR.Lib
                                 .Include(p => p.MedicalTrials)
                                     .ThenInclude(mt => mt.MedicalTrial)
                                 .Include(p => p.MedicalTrials)
-                                    .ThenInclude(mt => mt.PatientMedicalTrialStatus)
+                                    .ThenInclude(mt => mt.PatientMedicalTrialStatus)                              
                                 .Include(p => p.PatientMeasurements)
+                                .Include(p => p.PatientNACDates)
+                                .Include(p => p.PatientSurgeries)
+                                    .ThenInclude(ps => ps.Surgery)  
+                                .Include(p => p.PatientAllergicIntoleranceItems)
+                                    .ThenInclude(d => d.SideEffects)
+                                        .ThenInclude(se => se.SideEffect)
                                 .SingleOrDefaultAsync(m => m.ID == id);
+        }
+
+        internal Patient FindPatientByRM2Number(string rm2Number, bool loadDiagnoses = false)
+        {
+            Patient patient =  _context.Patients.FirstOrDefault(p => p.RM2Number.ToString().Equals(rm2Number));
+            if (patient != null && loadDiagnoses)
+            {
+                _context.Entry(patient).Collection(p => p.PatientDiagnoses).Load();
+                foreach(var diagnosis in patient.PatientDiagnoses)
+                {
+                    _context.Entry(diagnosis).Reference(p => p.DiagnosisType).Load();
+                }
+            }
+            return patient;
         }
 
         public async Task<Patient> FindPatientWithFirstLevelRelationsByIdAsync(int? id)
@@ -72,6 +92,11 @@ namespace AspergillosisEPR.Lib
                                 .Include(p => p.STGQuestionnaires)
                                 .Include(p => p.PatientImmunoglobulines)
                                 .Include(p => p.PatientRadiologyFindings)
+                                .Include(p => p.DrugLevels)
+                                .Include(p => p.PatientSurgeries)
+                                .Include(p => p.PatientAllergicIntoleranceItems)
+                                    .ThenInclude(d => d.SideEffects)
+                                        .ThenInclude(se => se.SideEffect)
                                 .AsNoTracking()
                                 .SingleOrDefaultAsync(m => m.ID == id);
         }
@@ -93,6 +118,68 @@ namespace AspergillosisEPR.Lib
                     patientImmunoglobinToUpdate.Value = patientImmunoglobin.Value;
                     _context.Update(patientImmunoglobinToUpdate);
                 }
+            }
+        }
+
+        internal void AddPatientPFTs(Patient patient, PatientPulmonaryFunctionTest[] patientPulmonaryFunctionTest)
+        {
+            if (patientPulmonaryFunctionTest.Length == 1 && patientPulmonaryFunctionTest[0] == null)
+            {
+                return;
+            }
+            patient.PatientPulmonaryFunctionTests = new List<PatientPulmonaryFunctionTest>();
+            foreach (var pft in patientPulmonaryFunctionTest)
+            {
+                pft.PatientId = patient.ID;
+                _context.PatientPulmonaryFunctionTests.Add(pft);
+                patient.PatientPulmonaryFunctionTests.Add(pft);
+            }
+        }
+
+        internal void AddPatientAllergiesIntolerances(Patient patient, PatientAllergicIntoleranceItem[] allergies)
+        {
+            if (allergies.Length == 1 && allergies[0] == null)
+            {
+                return;
+            }
+            patient.PatientAllergicIntoleranceItems = new List<PatientAllergicIntoleranceItem>();
+            foreach (var allergy in allergies)
+            {
+                allergy.PatientId = patient.ID;
+                _context.PatientAllergicIntoleranceItems.Add(allergy);
+                patient.PatientAllergicIntoleranceItems.Add(allergy);
+            }
+            AddSideEffectsToAllergyIntolerances(allergies);
+        }
+
+        internal void AddPatientSurgeries(Patient patient, PatientSurgery[] patientSurgery)
+        {
+
+            if (patientSurgery.Length == 1 && patientSurgery[0] == null)
+            {
+                return;
+            }
+            patient.PatientSurgeries = new List<PatientSurgery>();
+            foreach (var surgery in patientSurgery)
+            {
+                surgery.PatientId = patient.ID;
+                _context.PatientSurgeries.Add(surgery);
+                patient.PatientSurgeries.Add(surgery);
+            }
+        }
+
+        public void AddDrugLevels(Patient patient, PatientDrugLevel[] drugLevels)
+        {
+            if (drugLevels.Length == 1 && drugLevels[0] == null)
+            {
+                return;
+            }
+            patient.DrugLevels = new List<PatientDrugLevel>();
+            foreach (var drugLevel in drugLevels)
+            {
+                drugLevel.PatientId = patient.ID;
+                _context.PatientDrugLevels.Add(drugLevel);
+                patient.DrugLevels.Add(drugLevel);
             }
         }
 
@@ -211,6 +298,135 @@ namespace AspergillosisEPR.Lib
             }
         }
 
+        internal void UpdatePatientsPFTs(PatientPulmonaryFunctionTest[] patientPulmonaryFunctionTest, Patient patientToUpdate)
+        {
+            foreach (var pft in patientPulmonaryFunctionTest)
+            {
+                if (pft.ID == 0)
+                {
+                    pft.PatientId = patientToUpdate.ID;
+                    _context.Update(pft);
+                }
+                else
+                {
+                    var dbPFT = patientToUpdate.PatientPulmonaryFunctionTests.SingleOrDefault(s => s.ID == pft.ID);
+                    dbPFT.ResultValue = pft.ResultValue;
+                    dbPFT.PredictedValue = pft.PredictedValue;
+                    dbPFT.DateTaken = pft.DateTaken;
+                    dbPFT.PulmonaryFunctionTestId = pft.PulmonaryFunctionTestId;
+                    _context.Update(dbPFT);
+                }
+            }
+        }
+
+        internal void UpdatePatientAllergiesIntolerances(PatientAllergicIntoleranceItem[] allergies, 
+                                                         Patient patientToUpdate,
+                                                         HttpRequest request)
+        {
+            for (var cursor = 0; cursor < allergies.Length; cursor++)
+            {
+                var allergy = allergies[cursor];
+                if (allergy.ID == 0)
+                {
+                    allergy.PatientId = patientToUpdate.ID;
+                    string[] sideEffectsIDs = request.Form["Allergies[" + cursor + "].SideEffects"];
+
+                    var sideEffectsItems = _context.SideEffects.Where(se => sideEffectsIDs.Contains(se.ID.ToString()));
+                    foreach (var sideEffectItem in sideEffectsItems)
+                    {
+                        PatientAllergicIntoleranceItemSideEffect sideEffect = new PatientAllergicIntoleranceItemSideEffect();
+                        sideEffect.PatientAllergicIntoleranceItem = allergies[cursor];
+                        sideEffect.SideEffect = sideEffectItem;
+                        if (allergies[cursor].SideEffects == null) allergies[cursor].SideEffects = new List<PatientAllergicIntoleranceItemSideEffect>();
+                        allergies[cursor].SideEffects.Add(sideEffect);
+                    }
+                    _context.Update(allergy);
+                }
+                else
+                {
+                    var allergyIntoleranceToUpdate = _context.PatientAllergicIntoleranceItems
+                                                                    .Include( p => p.SideEffects)
+                                                                    .SingleOrDefault(s => s.ID == allergy.ID);
+
+                    string[] sideEffectsIDs = request.Form["Allergies[" + cursor + "].SideEffects"];                    
+                    var sideEffectsItems = _context.SideEffects.Where(se => sideEffectsIDs.Contains(se.ID.ToString()));
+                    var uiSelectedIds = sideEffectsIDs.Select(int.Parse).ToList();
+                    var toDeleteEffectIds = allergyIntoleranceToUpdate.SelectedEffectsIds.Except(uiSelectedIds);
+                    var toInsertEffectIds = uiSelectedIds.Except(allergyIntoleranceToUpdate.SelectedEffectsIds);
+
+                    if (toDeleteEffectIds.Count() > 0)
+                    {
+                        _context.PatientAllergicIntoleranceItemSideEffects.
+                                RemoveRange(_context.PatientAllergicIntoleranceItemSideEffects.
+                                    Where(pdse => toDeleteEffectIds.Contains(pdse.SideEffectId) && pdse.PatientAllergicIntoleranceItemId == allergyIntoleranceToUpdate.ID));
+                    }
+
+                    if (toInsertEffectIds.Count() > 0)
+                    {
+                        var sideEffectsNewItems = _context.SideEffects.Where(se => toInsertEffectIds.Contains(se.ID));
+                        foreach (var sideEffect in sideEffectsNewItems)
+                        {
+                            PatientAllergicIntoleranceItemSideEffect allergySideEffect = new PatientAllergicIntoleranceItemSideEffect();
+                            allergySideEffect.PatientAllergicIntoleranceItem = allergies[cursor];
+                            allergySideEffect.SideEffect = sideEffect;
+                            if (allergyIntoleranceToUpdate.SideEffects == null) allergyIntoleranceToUpdate.SideEffects = new List<PatientAllergicIntoleranceItemSideEffect>();
+                            allergyIntoleranceToUpdate.SideEffects.Add(allergySideEffect);
+                        }
+                    }
+
+                    allergyIntoleranceToUpdate.AllergyIntoleranceItemType = allergy.AllergyIntoleranceItemType;
+                    allergyIntoleranceToUpdate.Note = allergy.Note;
+                    allergyIntoleranceToUpdate.IntoleranceType = allergy.IntoleranceType;
+                    allergyIntoleranceToUpdate.AllergyIntoleranceItemId = allergy.AllergyIntoleranceItemId;
+                    allergyIntoleranceToUpdate.Severity = allergy.Severity;
+                    _context.Update(allergyIntoleranceToUpdate);
+                }
+            }
+        }
+
+        internal void UpdatePatientSurgeries(PatientSurgery[] surgeries, Patient patientToUpdate)
+        {
+            foreach (var surgery in surgeries)
+            {
+                if (surgery.ID == 0)
+                {
+                    surgery.PatientId = patientToUpdate.ID;
+                    _context.Update(surgery);
+                }
+                else
+                {
+                    var surgeryToUpdate = patientToUpdate.PatientSurgeries.SingleOrDefault(s => s.ID == surgery.ID);
+                    surgeryToUpdate.SurgeryId = surgery.SurgeryId;
+                    surgeryToUpdate.Note = surgery.Note;
+                    surgeryToUpdate.SurgeryDate = surgery.SurgeryDate;         
+                    _context.Update(surgeryToUpdate);
+                }
+            }
+        }
+
+        internal void UpdatePatientDrugLevels(PatientDrugLevel[] drugLevels, Patient patientToUpdate)
+        {
+            foreach (var drugLevel in drugLevels)
+            {
+                if (drugLevel.ID == 0)
+                {
+                    drugLevel.PatientId = patientToUpdate.ID;
+                    _context.Update(drugLevel);
+                }
+                else
+                {
+                    var drugLevelToUpdate = patientToUpdate.DrugLevels.SingleOrDefault(s => s.ID == drugLevel.ID);
+                    drugLevelToUpdate.DrugId = drugLevel.DrugId;
+                    drugLevelToUpdate.UnitOfMeasurementId = drugLevel.UnitOfMeasurementId;
+                    drugLevelToUpdate.LabNumber = drugLevel.LabNumber;
+                    drugLevelToUpdate.ResultValue = drugLevel.ResultValue;
+                    drugLevelToUpdate.DateReceived = drugLevel.DateReceived;
+                    drugLevelToUpdate.DateTaken = drugLevel.DateTaken;
+                    _context.Update(drugLevelToUpdate);
+                }
+            }
+        }
+
         public void UpdatePatientRadiology(PatientRadiologyFinding[] patientRadiologyFinding, 
                                              Patient patientToUpdate)
         {
@@ -297,6 +513,23 @@ namespace AspergillosisEPR.Lib
                     drugSideEffect.PatientDrug = drugs[cursor];
                     drugSideEffect.SideEffect = sideEffect;
                     drugs[cursor].SideEffects.Add(drugSideEffect);
+                }
+            }
+        }
+
+        private void AddSideEffectsToAllergyIntolerances(PatientAllergicIntoleranceItem[] allergicIntolerances)
+        {
+            for (var cursor = 0; cursor < Request.Form["Allergies.index"].ToList().Count; cursor++)
+            {
+                string stringIndex = Request.Form["Allergies.index"][cursor];
+                string sideEffectsIds = Request.Form["Allergies[" + stringIndex + "].SideEffects"];
+                var sideEffects = _context.SideEffects.Where(se => sideEffectsIds.Contains(se.ID.ToString()));
+                foreach (var sideEffect in sideEffects)
+                {
+                    PatientAllergicIntoleranceItemSideEffect drugSideEffect = new PatientAllergicIntoleranceItemSideEffect();
+                    drugSideEffect.PatientAllergicIntoleranceItem = allergicIntolerances[cursor];
+                    drugSideEffect.SideEffect = sideEffect;
+                    allergicIntolerances[cursor].SideEffects.Add(drugSideEffect);
                 }
             }
         }

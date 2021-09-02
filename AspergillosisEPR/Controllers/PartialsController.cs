@@ -14,6 +14,9 @@ using AspergillosisEPR.Models.PatientViewModels;
 using AspergillosisEPR.Lib.Search;
 using AspergillosisEPR.Lib;
 using AspergillosisEPR.Lib.CaseReportForms;
+using Microsoft.Extensions.Configuration;
+using AspergillosisEPR.Extensions;
+using AspergillosisEPR.Models.Patients;
 
 namespace AspergillosisEPR.Controllers
 {
@@ -23,11 +26,13 @@ namespace AspergillosisEPR.Controllers
         private readonly AspergillosisContext _context;
         private readonly DropdownListsResolver _listResolver;
         private readonly CaseReportFormsDropdownResolver _caseReportFormListResolver;
+        private readonly IConfiguration _configuration;
 
-        public PartialsController(AspergillosisContext context)
+        public PartialsController(AspergillosisContext context, IConfiguration configuration)
         {
             _listResolver = new DropdownListsResolver(context, ViewBag);
             _caseReportFormListResolver = new CaseReportFormsDropdownResolver(context);
+            _configuration = configuration;
             _context = context;
         }
         [Authorize(Roles ="Create Role, Admin Role")]
@@ -60,6 +65,21 @@ namespace AspergillosisEPR.Controllers
         }
 
         [Authorize(Roles = "Create Role, Admin Role")]
+        public IActionResult PulmonaryFunctionTest()
+        {
+            ViewBag.PulmonaryFunctionTestIds = _listResolver.PopulatePFTsDropDownList();
+            return PartialView();
+        }
+
+        [Authorize(Roles = "Update Role, Admin Role")]
+        public IActionResult EditPulmonaryFunctionTest()
+        {
+            ViewBag.PFTIds = _listResolver.PopulatePFTsDropDownList();
+            ViewBag.Index = (string)Request.Query["index"];
+            return PartialView();
+        }
+
+        [Authorize(Roles = "Create Role, Admin Role")]
         public IActionResult RadiologyForm()
         {
 
@@ -72,6 +92,64 @@ namespace AspergillosisEPR.Controllers
             return PartialView();
         }
 
+
+        [Authorize(Roles = "Create Role, Admin Role")]
+        public IActionResult SurgeryForm()
+        {
+            ViewBag.SurgeryId = _listResolver.PopulateSurgeryDropdownList();
+            return PartialView();
+        }
+
+        [Authorize(Roles = "Update Role, Admin Role")]
+        public IActionResult EditPatientSurgeryForm()
+        {
+            ViewBag.SurgeryId = _listResolver.PopulateSurgeryDropdownList();            
+            ViewBag.Index = (string)Request.Query["index"];
+            return PartialView();
+        }
+
+        [Authorize(Roles = "Update Role, Admin Role")]
+        public IActionResult EditPatientAllergyIntoleranceForm()
+        {
+            ViewBag.DrugId = _listResolver.DrugsDropDownList();
+            ViewBag.FoodId = _listResolver.FoodsDropdownList();
+            ViewBag.SideEffects = _listResolver.PopulateSideEffectsDropDownList(null);
+            ViewBag.Index = (string)Request.Query["index"];
+            return PartialView();
+        }
+
+
+        [Authorize(Roles = "Create Role, Admin Role")]
+        public IActionResult PatientAllergyIntoleranceForm()
+        {
+            ViewBag.DrugId = _listResolver.DrugsDropDownList();
+            ViewBag.SideEffects = _listResolver.PopulateSideEffectsDropDownList(null);
+            ViewBag.Index = (string)Request.Query["index"];
+            return PartialView();
+        }
+
+        [Authorize(Roles = "Update Role, Admin Role")]
+        public IActionResult ByName(string partialName)
+        {
+            ViewBag.Index = (string)Request.Query["index"];
+            switch (partialName)
+            {
+                case "Drug":
+                    ViewBag.ItemId = _listResolver.DrugsDropDownList();
+                    break;
+                case "Other":
+                    ViewBag.ItemId = _listResolver.OtherAllergicItemList();
+                    break;
+                case "Food":
+                    ViewBag.ItemId = _listResolver.FoodsDropdownList();
+                    break;
+                case "Fungi":
+                    ViewBag.ItemId = _listResolver.FungiDropdownList();
+                    break;
+            }
+            return PartialView(@"/Views/Partials/ByName/_"+partialName.FirstCharacterToUpper() + ".cshtml");
+        }
+
         [Authorize(Roles = "Update Role, Admin Role")]
         public IActionResult EditDiagnosisForm()
         {
@@ -80,6 +158,7 @@ namespace AspergillosisEPR.Controllers
             ViewBag.Index = (string)Request.Query["index"];
             return PartialView();
         }
+
 
         [Authorize(Roles = "Update Role, Admin Role")]
         public IActionResult EditDrugForm()
@@ -155,9 +234,14 @@ namespace AspergillosisEPR.Controllers
 
         public IActionResult SearchSelectPartial()
         {
+            ViewBag.renderGroupedSelect = false;
+            string searchIfGreaterThan  = _configuration.GetSection("turnNativeDropdownSelectIntoSearchableWhenMoreThanItems").Value ;
+            ViewBag.TurnIntoSearchableSelect = Int32.Parse(searchIfGreaterThan);
             string klass = Request.Query["klass"];
             ViewBag.Index = (string)Request.Query["index"];
             string field = Request.Query["field"];
+            var groupedSelects = new string[] { "AllergyIntoleranceItemId" };
+            if (groupedSelects.Contains(klass)) ViewBag.renderGroupedSelect = true;
             switch (klass)
             {
                 case "DrugId":
@@ -181,6 +265,24 @@ namespace AspergillosisEPR.Controllers
                     var radiologyCollection = klass.Replace("Id", String.Empty);
                     ViewBag.SearchSelect = _listResolver.PopulateRadiologyDropdownList(radiologyCollection);
                     break;
+                case "MedicalTrialId":
+                    ViewBag.SearchSelect = _listResolver.PouplateMedicalTrialsDropdownList();
+                    break;
+                case "PatientMedicalTrialStatusId":
+                    ViewBag.SearchSelect = _listResolver.PopulatePatientMedicalTrialsStatusesDropdownList();
+                    break;
+                case "SurgeryId":
+                    ViewBag.SearchSelect = _listResolver.PopulateSurgeryDropdownList();
+                    break;
+                case "Severity":
+                    ViewBag.SearchSelect = new SelectList(PatientAllergicIntoleranceItem.Severities());
+                    break;
+                case "AllergyIntoleranceItemId":
+                    ViewBag.SearchSelect = _listResolver.GroupedSelectForIntolerances();
+                    break;
+                case "SmokingStatusId":
+                    ViewBag.SearchSelect = _listResolver.PopulateSmokingStatusesDropdownList();
+                    break;
             }
             return PartialView();
         }
@@ -201,13 +303,30 @@ namespace AspergillosisEPR.Controllers
             return PartialView();
         }
 
-
         [Authorize(Roles = "Update Role, Admin Role")]
         public IActionResult EditPatientMedicalTrialForm()
         {
             ViewBag.Index = (string)Request.Query["index"];
             ViewBag.MedicalTrialsIds = _listResolver.PouplateMedicalTrialsDropdownList();
             ViewBag.PatientMedicalTrialStatusesIds = _listResolver.PopulatePatientMedicalTrialsStatusesDropdownList();
+            return PartialView();
+        }
+
+        [Authorize(Roles = "Create Role, Admin Role")]
+        public IActionResult DrugLevelForm()
+        {
+            ViewBag.Index = (string)Request.Query["index"];
+            ViewBag.UnitId = _listResolver.PouplateUnitsDropdownList();
+            ViewBag.DrugId = _listResolver.DrugsDropDownList();
+            return PartialView();
+        }
+
+        [Authorize(Roles = "Update Role, Admin Role")]
+        public IActionResult EditDrugLevelForm()
+        {
+            ViewBag.Index = (string)Request.Query["index"];
+            ViewBag.UnitId = _listResolver.PouplateUnitsDropdownList();
+            ViewBag.DrugId = _listResolver.DrugsDropDownList();
             return PartialView();
         }
 
@@ -228,6 +347,4 @@ namespace AspergillosisEPR.Controllers
         }
 
     }
-
-
 }

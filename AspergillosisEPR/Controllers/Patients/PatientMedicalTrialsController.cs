@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AspergillosisEPR.Controllers.Patients
 {
+    [Route("Patients/{patientId:int}/MedicalTrials")]
     public class PatientMedicalTrialsController : PatientBaseController
     {
         public PatientMedicalTrialsController(AspergillosisContext context) : base(context)

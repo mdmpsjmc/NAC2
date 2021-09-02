@@ -68,7 +68,7 @@
                     {
                         "data": "dob", "name": "DOB", "autoWidth": true,
                         "render": function(data) {
-                            return moment.unix(data).format("MM/DD/YYYY");
+                            return moment.unix(data).format("DD/MM/YYYY");
                         }                    
                     },
                     {
@@ -133,6 +133,8 @@
                 || field.match("patientImmunoglobulin")
                 || field.match("Finding")
                 || field.match("patientMedicalTrial")
+                || field.match("drugLevels")
+                || field.match("allergies")
                 || field.match("caseReportFormResult")) {
                 var fieldName = fieldCapitalized;
                 field = fieldCapitalized.replace(new RegExp("\\[", "g"), "_").replace(new RegExp("].","g"), "__");            
@@ -190,15 +192,19 @@
             var insertIntoClass = $(this).data("insert-into-class"); 
             var index = $(visibleRow).length;
             $.get($(this).attr("href") + "?index=" + index, function (responseHtml) {
-                LoadingIndicator.hide();                          
+                LoadingIndicator.hide();
                 $(insertIntoClass).append(responseHtml);
                 initPatientsDateTimePickers();
                 $("select.select2").select2({
                     minimumResultsForSearch: -1,
                     placeholder: function () {
-                        $(this).data('placeholder');
+                        return $(this).data('placeholder');
                     }
                 });
+                $("select.selectize, select.select2-search").selectize();
+                AllergyIntolerance.init();
+            }).always(function () {
+                LoadingIndicator.hide();
             });
         })
     }
@@ -220,7 +226,10 @@
                     $("div#ig-charts").html(""); //clears hidden charts div. 
                     Charts.igChartsFromResponse(response, true);
                 });
+                UI.initAjaxTab();
                 $("select[multiple='multiple']").multiSelect();
+                $("select.selectize, select.select2-search").selectize();
+                showLabTests();
             });
         });
     }
@@ -243,11 +252,15 @@
                         $(this).data('placeholder');
                     }
                 });
+                $("select.select2-search").selectize();
                 $("select[multiple='multiple']").multiSelect();
                 CaseReportForms.onPatientCaseReportFormSelectChange();
                 CaseReportForms.deletePartialFromPopup();
                 deletePartialFromPopup();
                 onPatientStatusChange();
+                AllergyIntolerance.init();
+                $("select.selectize, select.select2-search").selectize();
+                UI.initAjaxTab();
             });
         });
     }
@@ -362,7 +375,8 @@
     var addFilteringColumns = function () {
         $('#patients_datatable tfoot th').each(function () {
             var title = $(this).text();
-            $(this).html('<input type="text" class="form-control ' + title + '" placeholder="Search ' + title + '" />');
+            var isDatepicker = title.match("Date") ? " table-datepicker " : "";
+            $(this).html('<input type="text" class="form-control ' + title + isDatepicker + '" placeholder="Search ' + title + '" />');
         });
 
         window.patientsTable.columns().every(function () {
@@ -375,6 +389,12 @@
                         .draw();
                 }
             });
+        });
+
+        $("input.table-datepicker").datetimepicker({
+            format: "DD/MM/YYYY"
+        }).on('dp.change', function (ev) {
+            $("input.table-datepicker").trigger("change");
         });
     }
 
@@ -447,7 +467,7 @@
             e.preventDefault();
             var exportToFile = $(this).data("file");
             $("button.download-details").attr("id", exportToFile);
-            var tabs = $(this).parents("div.modal-content").find("ul#details-tab li a");
+            var tabs = $(this).parents("div.modal-content").find("ul#details-tab li a.exportable");
             var container = $("div.inline-group.labels");
             container.html("");            
             $.each(tabs, function (index, element) {
@@ -475,7 +495,7 @@
             e.preventDefault();
             var sgrqChartImage = encodeURIComponent($("img#sgrq-chart-image").attr("src"));
             var patientId = $(this).data("id");
-            var requestUrl = "patients/" + patientId + "/exports/pdf";            
+            var requestUrl = "/patients/" + patientId + "/exports/pdf";            
             var requestData = $("form#export-options-form").serialize() + "&sgrqChart=" + sgrqChartImage;
             var igCharts = $("div#ig-charts img.ig-chart");
             $.each(igCharts, function (index, chart) {
@@ -491,11 +511,35 @@
             e.preventDefault();
             var sgrqChartImage = encodeURIComponent($("img#sgrq-chart-image").attr("src"));
             var patientId = $(this).data("id");
-            var requestUrl = "patients/" + patientId + "/exports/excel";     
+            var requestUrl = "/patients/" + patientId + "/exports/excel";     
             var requestData = $("form#export-options-form").serialize();
             AjaxFileDownload.execute(requestUrl, requestData, "Patient_Details_" + patientId + ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         });
     }
+
+    var distanceUpdate = function () {
+        $(document).off("click.distance").on("click.distance", "button#distance-update", function (e) {
+            e.preventDefault();
+            LoadingIndicator.show();
+            $.post("/postcodes/update", function (response) {
+
+                LoadingIndicator.hide();
+            });
+        });
+    };
+
+    var showLabTests = function () {
+        $(document).off("click.labtests").on("click.labtests", "a.show-lab-test", function (e) {
+            e.preventDefault();
+            LoadingIndicator.show();
+            var requestUrl = $(this).data("url");
+            $.post(requestUrl, function (responseHtml) {
+                LoadingIndicator.hide();
+                $("div#test-modal").html(responseHtml);
+                $("div#lab-test-modal").modal("show");
+            });
+        });
+    };
 
 
     return {
@@ -518,6 +562,7 @@
             onModalClose();
             initPatientsDateTimePickers();
             onExportOptionsShow();
+            showLabTests();
         },
 
         bindPatientsModals: function() {
@@ -559,6 +604,7 @@
             initPatientsDataTable();
             submitNewPatient();
             enableAntiForgeryProtectionWithAjax();
+            distanceUpdate();
         }
     }
 }();

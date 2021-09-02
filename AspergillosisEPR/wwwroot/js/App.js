@@ -13,11 +13,13 @@
             });
         });
     }
+
     return {
         init: function () {
             onLogoutLinkClick();
             Patients.init();
-            Settings.init();
+            Settings.init()
+            Drugs.init();
             Users.init();
             Imports.init();
             DiagnosisTypes.init();
@@ -29,6 +31,9 @@
             CaseReportForms.init();
             AnonPatients.init();
             MedicalTrials.init();
+            AllergyIntolerance.init();
+            UI.init();
+            Reports.init();
         }
     }
 

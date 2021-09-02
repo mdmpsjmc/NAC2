@@ -136,6 +136,42 @@ namespace AspergillosisEPR.Models.PatientViewModels
                                                     Contains(m.ID.ToString())
                                             );
                     break;
+                case "PatientMedicalTrial":
+
+                    Predicate = Predicate.Or(m => m.MedicalTrials.
+                                                    Where(pd => pd.GetType().GetProperty(searchField).GetValue(pd, null).ToString() == SearchValue).
+                                                    Select(p => p.PatientId.ToString()).
+                                                    Contains(m.ID.ToString())
+                                            );
+                    break;
+                case "PatientSurgery":
+
+                    Predicate = Predicate.Or(m => m.PatientSurgeries.
+                                                    Where(pd => pd.GetType().GetProperty(searchField).GetValue(pd, null).ToString() == SearchValue).
+                                                    Select(p => p.PatientId.ToString()).
+                                                    Contains(m.ID.ToString())
+                                            );
+                    break;
+                case "PatientAllergicIntoleranceItem":
+                    var searchId = SearchValue.Split("_")[0];
+                    var searchSubKlass = SearchValue.Split("_")[1];
+
+                    Predicate = Predicate.Or(m => m.PatientAllergicIntoleranceItems.
+                                                    Where(pd => pd.GetType().GetProperty(searchField).GetValue(pd, null).ToString() == searchId && pd.AllergyIntoleranceItemType == searchSubKlass).
+                                                    Select(p => p.PatientId.ToString()).
+                                                    Contains(m.ID.ToString())
+                                            );
+                    break;
+                case "PatientNACDates":
+                    if (Field.Contains("Date"))
+                    {
+                        string dateField = Field.Split(".")[1];
+                        switch (SearchCriteria)
+                        {
+                           
+                        }
+                    }
+                    break;
             }
             
             return Predicate;
@@ -220,6 +256,66 @@ namespace AspergillosisEPR.Models.PatientViewModels
                                                     Select(p => p.PatientId.ToString()).
                                                     Contains(m.ID.ToString())
                                             );
+                    break;
+                case "PatientMedicalTrial":
+
+                    Predicate = Predicate.And(m => m.MedicalTrials.
+                                                    Where(pd => pd.GetType().GetProperty(searchField).GetValue(pd, null).ToString() == SearchValue).
+                                                    Select(p => p.PatientId.ToString()).
+                                                    Contains(m.ID.ToString())
+                                            );
+                    break;
+
+                case "PatientSurgery":
+
+                    Predicate = Predicate.And(m => m.PatientSurgeries.
+                                                    Where(pd => pd.GetType().GetProperty(searchField).GetValue(pd, null).ToString() == SearchValue).
+                                                    Select(p => p.PatientId.ToString()).
+                                                    Contains(m.ID.ToString())
+                                            );
+                    break;
+
+                case "PatientAllergicIntoleranceItem":
+                    var searchId = SearchValue.Split("_")[0];
+                    var searchSubKlass = SearchValue.Split("_")[1];
+
+                    Predicate = Predicate.And(m => m.PatientAllergicIntoleranceItems.
+                                                    Where(pd => pd.GetType().GetProperty(searchField).GetValue(pd, null).ToString() == searchId && pd.AllergyIntoleranceItemType == searchSubKlass).
+                                                    Select(p => p.PatientId.ToString()).
+                                                    Contains(m.ID.ToString())
+                                            );
+                    break;
+                case "PatientNACDates":
+                    if (Field.Contains("Date"))
+                    {
+                        string dateField = Field.Split(".")[1];
+                        switch (SearchCriteria)
+                        {
+                            case "GreaterThan":
+
+                                Predicate = Predicate.And(m => m.PatientNACDates.
+                                                          Where(pd => (Convert.ToDateTime(pd.GetType().GetProperty(dateField).GetValue(pd, null)).Date > Convert.ToDateTime(SearchValue).Date)).
+                                                          Select(p => p.PatientId.ToString()).
+                                                          Contains(m.ID.ToString()));
+                                break;
+                            case "SmallerThan":
+
+                                Predicate = Predicate.And(m => m.PatientNACDates.
+                                                          Where(pd => (Convert.ToDateTime(pd.GetType().GetProperty(dateField).GetValue(pd, null)).Date < Convert.ToDateTime(SearchValue).Date)).
+                                                          Select(p => p.PatientId.ToString()).
+                                                          Contains(m.ID.ToString()));
+
+
+                                break;
+                            case "Exact":
+
+                                Predicate = Predicate.And(m => m.PatientNACDates.
+                                                          Where(pd => (Convert.ToDateTime(pd.GetType().GetProperty(dateField).GetValue(pd, null)).Date == Convert.ToDateTime(SearchValue).Date)).
+                                                          Select(p => p.PatientId.ToString()).
+                                                          Contains(m.ID.ToString()));
+                                break;
+                        }
+                    }
                     break;
 
             }

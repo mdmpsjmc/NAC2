@@ -4,7 +4,7 @@
         $('#btn-import-data').on('click', function (e) {
             e.preventDefault();
             $('#upload-response').html("");
-            var fileExtension = ['xls', 'xlsx', 'csv', 'pdf'];
+            var fileExtension = ['xls', 'xlsx', 'csv', 'pdf', 'docx', 'doc'];
             var filename = $('#fileToImport').val();
             if (filename.length === 0) {
                 alert("Please select a valid file.");
@@ -13,7 +13,7 @@
             else {
                 var extension = filename.replace(/^.*\./, '');
                 if ($.inArray(extension, fileExtension) === -1) {
-                    alert("Please select only excel files.");
+                    alert("Please select only excel, word or pdf files.");
                     return false;
                 }
             }
@@ -83,10 +83,62 @@
         });
     }
 
+    var initializeBatchAjaxImport = function () {
+        $('#batch-import-form-submit').on('click', function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "/ClinicLettersBatchImport/Create",
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    if (response.length === 0) {
+                        LoadingIndicator.hide();
+                        alert('Some error occured while uploading');
+                    } else {
+                        $('#batch-upload-response').html("<div class='alert alert-info'><i class='fa fa-info-circle'></i> &nbsp; Processed (added or updated)" + response.result + " records from orginal file</div>");
+                        LoadingIndicator.hide();
+                    }
+                },
+                error: function (e) {
+                    LoadingIndicator.hide();
+                    $('#batch-upload-response').html(e.responseText);
+                }
+            });
+        });
+    };
+
+    var initializePdfBatchAjaxImport = function () {
+        $('button#batch-observation-points-form-submit').on('click', function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "/ClinicLettersBatchImport/Update",
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    if (response.length === 0) {
+                        LoadingIndicator.hide();
+                        alert('Some error occured while uploading');
+                    } else {
+                        $('#batch-upload-response').html("<div class='alert alert-info'><i class='fa fa-info-circle'></i> &nbsp; Processed (added or updated)" + response.result + " records from orginal file</div>");
+                        LoadingIndicator.hide();
+                    }
+                },
+                error: function (e) {
+                    LoadingIndicator.hide();
+                    $('#batch-upload-response').html(e.responseText);
+                }
+            });
+        });
+    };
+
     return {
         init: function () {
             initializeAjaxImport();
+            initializeBatchAjaxImport();
             initImportsDataTable();
+            initializePdfBatchAjaxImport();
         }
     }
 }();

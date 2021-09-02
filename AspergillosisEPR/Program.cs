@@ -1,9 +1,12 @@
 ﻿using System;
-using AspergillosisEPR.Data;
+using AspergillosisEPR.Data.DatabaseSeed;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using FluentScheduler;
+using AspergillosisEPR.Data;
+using AspergillosisEPR.BackgroundTasks.Logging;
 
 namespace AspergillosisEPR
 {
@@ -12,25 +15,16 @@ namespace AspergillosisEPR
         public static void Main(string[] args)
         {
             var host = BuildWebHost(args);
-
             using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 try
                 {
-                    var context = services.GetRequiredService<AspergillosisContext>();
-                    DbInitializer.Initialize(context);
-                    DbInitializer.AddDefaultPatientStatuses(context);
-                    DbInitializer.CreateDbImportTypes(context);                
-                    DbInitializer.AddIgTypes(context);
-                    RadiologyDataInitializer.AddRadiologyModels(context);
-                    CaseReportFormsDataInitializer.AddCaseReportFormsModels(context);
-                    QoLExcelImportType.Seed(context);
-                    IGgEPRImportTypeSeed.Seed(context);
+                    var context = services.GetRequiredService<AspergillosisContext>();                  
                     var context2 = services.GetRequiredService<ApplicationDbContext>();
-                    AppDbInitializer.Initialize(context2);
-                    CaseReportFormsDataInitializer.AddSelectFieldTypes(context);
-                    MedicalTiralsDataInitializer.AddMedicalTrialsModels(context);
+                    var hostingEnvironment = services.GetRequiredService<IHostingEnvironment>();
+                    AspergillosisDatabaseSeeder.SeedDatabase(hostingEnvironment, context);
+                    AppDbInitializer.Initialize(context2);                   
                 }
                 catch (Exception ex)
                 {
@@ -38,8 +32,9 @@ namespace AspergillosisEPR
                     logger.LogError(ex, "An error occurred while seeding the database.");
                 }
             }
-
+           
             host.Run();
+
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
@@ -47,7 +42,9 @@ namespace AspergillosisEPR
                 .UseIISIntegration()
                 .UseUrls("http://0*:5000/")
                 .UseKestrel()
+                .ConfigureLogging(builder => builder.AddFile())
                 .UseStartup<Startup>()
                 .Build();
+
     }
 }

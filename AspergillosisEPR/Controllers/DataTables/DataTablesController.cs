@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using System.Collections;
 using AspergillosisEPR.Lib;
 using System.Collections.ObjectModel;
+using System.Globalization;
+using AspergillosisEPR.Helpers;
 
 namespace AspergillosisEPR.Controllers.DataTables
 {
@@ -80,6 +82,24 @@ namespace AspergillosisEPR.Controllers.DataTables
         protected void CountTotal()
         {
             _recordsTotal = _list.Count();
+        }
+
+        protected void SearchListByDate(string partialSearch, string fieldName)
+        {
+            string format = "dd/MM/yyyy";
+            try
+            {
+                var searchDate = DateTime.ParseExact(partialSearch.Trim(), format, CultureInfo.InvariantCulture);
+                _list = _list.Where(p => {
+                    double fieldValue = p.GetType().GetProperty(fieldName).GetValue(p, null);
+                    DateTime dateField = DateHelper.UnixTimeStampToDateTime(fieldValue);
+                    return dateField.Date == searchDate.Date && dateField.Month == searchDate.Month && dateField.Year == searchDate.Year;
+                }).ToList();
+            }
+            catch (FormatException ex)
+            {
+                _list = new List<dynamic>();
+            }
         }
 
     }

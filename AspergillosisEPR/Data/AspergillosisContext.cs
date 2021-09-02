@@ -9,6 +9,7 @@ using AspergillosisEPR.Models.CaseReportForms.ViewModels;
 using AspergillosisEPR.Models.Radiology;
 using AspergillosisEPR.Models.Patients;
 using AspergillosisEPR.Models.MedicalTrials;
+using AspergillosisEPR.Models.Reporting;
 
 namespace AspergillosisEPR.Data
 {
@@ -68,6 +69,32 @@ namespace AspergillosisEPR.Data
         public DbSet<MedicalTrialStatus> MedicalTrialStatuses { get; set; }
         public DbSet<MedicalTrialType> MedicalTrialTypes { get; set; }
 
+        public DbSet<PatientDrugLevel> PatientDrugLevels { get; set; }
+        public DbSet<UnitOfMeasurement> UnitOfMeasurements { get; set; }
+        public DbSet<TemporaryNewPatient> TemporaryNewPatient { get; set; }
+
+        public DbSet<PulmonaryFunctionTest> PulmonaryFunctionTests { get; set; }
+        public DbSet<SmokingStatus> SmokingStatuses { get; set; }
+        public DbSet<Surgery> Surgeries { get; set; }
+        public DbSet<PatientPulmonaryFunctionTest> PatientPulmonaryFunctionTests { get; set; }
+        public DbSet<PatientSurgery> PatientSurgeries { get; set; }
+        public DbSet<PatientSmokingDrinkingStatus> PatientSmokingDrinkingStatus { get; set; }
+        public DbSet<Food> Foods { get; set; }
+        public DbSet<PatientAllergicIntoleranceItem> PatientAllergicIntoleranceItems { get; set; }
+        public DbSet<PatientAllergicIntoleranceItemSideEffect> PatientAllergicIntoleranceItemSideEffects { get; set; }
+        public DbSet<OtherAllergicItem> OtherAllergicItems { get; set; }
+        public DbSet<Fungi> Fungis { get; set; }
+        public DbSet<ReportType> ReportTypes { get; set; }
+        public DbSet<Report> Reports { get; set; }
+        public DbSet<PatientReportItem> PatientReportItems { get; set; }
+        public DbSet<UKOutwardCode> UKOutwardCodes { get; set; }
+        public DbSet<UKPostCode> UKPostCodes { get; set; }
+        public DbSet<PatientHaematology> PatientHaematologies {get; set;}
+        public DbSet<PatientNACDates> PatientNACDates { get; set; }
+        public DbSet<TestType> TestTypes { get; set; }
+        public DbSet<PatientTestResult> PatientTestResult { get; set; }
+        public DbSet<PatientMRCScore> PatientMRCScores { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Patient>().ToTable("Patients");
@@ -118,6 +145,34 @@ namespace AspergillosisEPR.Data
             modelBuilder.Entity<MedicalTrialPrincipalInvestigator>().ToTable("MedicalTrialPrincipalInvestigators");
             modelBuilder.Entity<MedicalTrialStatus>().ToTable("MedicalTrialStatuses");
             modelBuilder.Entity<MedicalTrialType>().ToTable("MedicalTrialTypes");
+            modelBuilder.Entity<PatientDrugLevel>().ToTable("PatientDrugLevel");
+            modelBuilder.Entity<UnitOfMeasurement>().ToTable("UnitOfMeasurements");
+            modelBuilder.Entity<TemporaryNewPatient>().ToTable("TemporaryNewPatients");
+            modelBuilder.Entity<SmokingStatus>().ToTable("SmokingStatuses");
+            modelBuilder.Entity<Surgery>().ToTable("Surgeries");
+            modelBuilder.Entity<PatientPulmonaryFunctionTest>().ToTable("PatientPulmonaryFunctionTests");
+            modelBuilder.Entity<PatientSurgery>().ToTable("PatientSurgeries");
+            modelBuilder.Entity<PatientSmokingDrinkingStatus>().ToTable("PatientSmokingDrinkingStatuses");
+            modelBuilder.Entity<Food>().ToTable("Foods");
+            modelBuilder.Entity<OtherAllergicItem>().ToTable("OtherAllergicItems");
+            modelBuilder.Entity<Fungi>().ToTable("Fungis");
+            modelBuilder.Entity<ReportType>().ToTable("ReportTypes");
+            modelBuilder.Entity<Report>().ToTable("Reports");
+            modelBuilder.Entity<PatientReportItem>().ToTable("PatientReportItems");
+            modelBuilder.Entity<PatientNACDates>().ToTable("PatientNACDates");
+            modelBuilder.Entity<UKOutwardCode>()
+                .Property(p => p.Longitude)
+                .HasPrecision(9, 4);
+            modelBuilder.Entity<UKOutwardCode>()
+                .Property(p => p.Latitude)
+                .HasPrecision(9, 4);
+            modelBuilder.Entity<UKPostCode>()
+               .Property(p => p.Longitude)
+               .HasPrecision(9, 4);
+            modelBuilder.Entity<UKPostCode>()
+                .Property(p => p.Latitude)
+                .HasPrecision(9, 4);
+
         }
 
     }

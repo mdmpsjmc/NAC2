@@ -1,0 +1,74 @@
+﻿@model AspergillosisEPR.Models.Patient
+@using AspergillosisEPR.Models.Patients;
+
+<div class="col-12 row drug-level-form" style="margin: 0px !important">
+    @for (int i = 0; i < Model.DrugLevels.OrderByDescending(q => q.DateTaken).ToList().Count; i++)
+    {
+        PatientDrugLevel drugLevel = Model.DrugLevels.OrderByDescending(q => q.DateTaken).ToList()[i];
+        <div class="patient-drug-level">
+            @Html.Hidden("DrugLevels[" + i.ToString() + "].ID", drugLevel.ID)
+            <fieldset>
+                <div class="row">
+                    <label class="select">
+                        <label asp-for="@drugLevel.DrugId" class="select">
+                            @Html.DropDownList("DrugLevels["+i +"].DrugId", (SelectList)ViewBag.DrugId[i], "Select Drug", new { @class="selectize" })
+                            <i></i>
+                        </label>
+                    </label>
+                </div>
+            </fieldset>
+            <section class="col col-6">
+                <label class="input">
+                    <i class="icon-append fa fa-calendar"></i>
+                    <input asp-for="@drugLevel.DateReceived" placeholder="Date Received" class="date-taken" type="text" name="DrugLevels[@(i)].DateReceived" id="DrugLevels_@(i)__DateReceived">
+                </label>
+            </section>
+            <section class="col col-6">
+                <label class="input">
+                    <i class="icon-append fa fa-calendar"></i>
+                    <input asp-for="@drugLevel.DateTaken" placeholder="Date Taken" class="date-taken" type="text" name="DrugLevels[@(i)].DateTaken" id="DrugLevels_@(i)__DateTaken">
+                </label>
+            </section>
+            <div class="row">
+                <section class="col col-2">
+                    <label class="input">
+                        <i class="icon-append fa fa-arrows-h"></i>
+                        <input asp-for="@drugLevel.ComparisionCharacter" placeholder="< or >" type="text" name="DrugLevels[@(i)].ComparisionCharacter" id="DrugLevels_@(i)__ComparisionCharacter">
+                    </label>
+                </section>
+                <section class="col col-4">
+                    <label class="input">
+                        <i class="icon-append fa fa-flask"></i>
+                        <input asp-for="@drugLevel.ResultValue" placeholder="Result" type="text" name="DrugLevels[@(i)].ResultValue" id="DrugLevels_@(i)__ResultValue">
+                    </label>
+                </section>
+                <section class="col col-2">
+                    <label class="select">
+                        @Html.DropDownList("DrugLevels[" + i + "].UnitOfMeasurementId", (SelectList)ViewBag.UnitId[i], "")
+                        <i></i>                     
+                    </label>
+                </section>
+                <section class="col col-4">
+                    <label class="input">
+                        <i class="icon-append fa fa-flask"></i>
+                        <input asp-for="@drugLevel.LabNumber" placeholder="Lab Number" type="text" name="DrugLevels[@i].LabNumber" id="DrugLevels_@(i)__LabNumber">
+                    </label>
+                </section>
+            </div>
+            <div class="row">
+                <a href="@Url.Action("Delete", "PatientDrugLevels" , new { patientId=drugLevel.PatientId, id=drugLevel.ID})" class="btn btn-danger remove-existing-item pull-right" data-id="@drugLevel.ID" data-what="Patient Drug Level" data-toggle="tooltip" data-title="Remove Drug Level" style="padding: 5px">
+                    <i class="fa fa-trash"></i>
+                </a>
+            </div>
+        </div>
+    }
+</div>
+@if (User.IsInRole("Update Role") || User.IsInRole("Admin Role"))
+{
+    <a href="@Url.Action("EditDrugLevelForm", "Partials")" class="btn btn-success edit-drug-level edit-patient-partial" data-visible-row="div.patient-drug-level:visible" data-insert-into-class="div.drug-level-form" style="padding: 5px">
+        <i class="fa fa-plus"></i>
+        <span>
+            <strong>Add patient drug level</strong>
+        </span>
+    </a>
+}

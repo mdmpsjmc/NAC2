@@ -125,6 +125,8 @@
 
         $("input.table-datepicker").datetimepicker({
             format: "DD/MM/YYYY"
+        }).on('dp.change', function (ev) {
+            $("input.table-datepicker").trigger("change");
         });
     }
 
@@ -151,7 +153,7 @@
                 }).on("dp.change", function(e) {                        
                         addDateAttributes(e.target);
                 }).trigger("chage");
-                initalizeSelect2PatientSearch();
+                initalizeSelect2PatientSearch("select.select2-patient-search");
             });
         });
     }
@@ -214,8 +216,8 @@
         });
     }
 
-    var initalizeSelect2PatientSearch = function () {
-        $("select.select2-patient-search").select2({
+    var initalizeSelect2PatientSearch = function (htmlElement) {
+        $(htmlElement).select2({
             ajax: {
                 url: "/Select2Patients/Search",
                 dataType: 'json',
@@ -231,12 +233,15 @@
                     };
                 }
             },
-            placeholder: 'Search for a patient by identifier or Name',
             escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
             minimumInputLength: 2,
             dropdownParent: $("div#new-patient-visit-modal"),
             templateResult: formatPatient,
-            templateSelection: formatRepoSelection
+            templateSelection: formatRepoSelection,
+            placeholder: {
+                id: "",
+                placeholder: "Search ..."
+            },
         }).on("change", function (e) {
             var patientId = $(this).val();
             LoadingIndicator.show();
@@ -422,6 +427,10 @@
    }
 
     return {
+
+        initalizeSelect2PatientSearch: function (htmlElement) {
+            return initalizeSelect2PatientSearch(htmlElement)
+        },
 
         init: function () {
             initializeDataTable();

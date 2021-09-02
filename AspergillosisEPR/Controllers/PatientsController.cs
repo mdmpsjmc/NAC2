@@ -62,7 +62,7 @@ namespace AspergillosisEPR.Controllers
 
         [Authorize(Roles = ("Admin Role, Create Role"))]
         [Audit(EventTypeName = "Patient::Create", IncludeHeaders = true, IncludeModel = true)]
-        public IActionResult Create([Bind("LastName,FirstName,DOB,Gender, RM2Number, PatientStatusId, DateOfDeath")]
+        public IActionResult Create([Bind("LastName,FirstName,DOB,Gender, RM2Number, PatientStatusId, DateOfDeath, GenericNote")]
                                                  Patient patient,
                                                  PatientDiagnosis[] diagnoses,
                                                  PatientDrug[] drugs,
@@ -70,6 +70,10 @@ namespace AspergillosisEPR.Controllers
                                                  PatientImmunoglobulin[] patientImmunoglobulin,
                                                  PatientRadiologyFinding[] patientRadiologyFinding,
                                                  PatientMedicalTrial[] patientMedicalTrial,
+                                                 PatientDrugLevel[] drugLevels,
+                                                 PatientSurgery[] surgeries,
+                                                 PatientAllergicIntoleranceItem[] allergies, 
+                                                 PatientPulmonaryFunctionTest[] patientPulmonaryFunctionTest,
                                                  CaseReportFormResult[] caseReportFormResult)
         {
             var existingPatient = _context.Patients.FirstOrDefault(x => x.RM2Number == patient.RM2Number);
@@ -91,6 +95,10 @@ namespace AspergillosisEPR.Controllers
                                                              patientImmunoglobulin,
                                                              ref patientRadiologyFinding);
             _patientManager.AddMedicalTrials(patient, patientMedicalTrial);
+            _patientManager.AddDrugLevels(patient, drugLevels);
+            _patientManager.AddPatientSurgeries(patient, surgeries);
+            _patientManager.AddPatientAllergiesIntolerances(patient, allergies);
+            _patientManager.AddPatientPFTs(patient, patientPulmonaryFunctionTest);
             try
             {
                 if (ModelState.IsValid)
@@ -122,6 +130,7 @@ namespace AspergillosisEPR.Controllers
 
             var patient = await _patientManager.FindPatientWithRelationsByIdAsync(id);
             LoadReleatedMedicalTrials(patient);
+            LoadRelatedDrugLevels(patient);
             if (patient == null)
             {
                 return NotFound();
@@ -131,7 +140,7 @@ namespace AspergillosisEPR.Controllers
                                                 .BuildPatientViewModel(_context, patient, _caseReportFormManager);
 
             return PartialView(patientDetailsViewModel);
-        }      
+        }
 
         [Authorize(Roles = ("Admin Role, Read Role"))]
         [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -163,12 +172,18 @@ namespace AspergillosisEPR.Controllers
             }
             Patient patient = await _patientManager.FindPatientWithRelationsByIdAsync(id);
             LoadReleatedMedicalTrials(patient);
+            LoadRelatedDrugLevels(patient);
+           
             if (patient == null)
             {
                 return NotFound();
             }
             _listResolver.BindSelects(patient);
             _listResolver.BindMedicalTrialsSelects(ViewBag, patient);
+            _listResolver.BindDrugLevelSelects(ViewBag, patient);
+            _listResolver.BindSurgeriesSelects(ViewBag, patient);
+            
+
             ViewBag.CaseReportForms = (List <IGrouping<string, CaseReportFormResult>>)  _caseReportFormManager
                                       .GetGroupedCaseReportFormsForPatient(patient.ID);
             return PartialView(patient);
@@ -183,6 +198,10 @@ namespace AspergillosisEPR.Controllers
                                                               [Bind("ID, DateTaken, Value, ImmunoglobulinTypeId")] PatientImmunoglobulin[] patientImmunoglobulines,
                                                               [Bind("ID, DateTaken, FindingId, RadiologyTypeId, ChestLocationId, ChestDistributionId, GradeId, TreatmentResponseId, Note")] PatientRadiologyFinding[] radiololgyFindings,
                                                               [Bind("ID, PatientId, MedicalTrialId, PatientMedicalTrialStatusId, IdentifiedDate, ConsentedDate, RecruitedDate, Consented")] PatientMedicalTrial[] patientMedicalTrial,
+                                                              [Bind("ID, PatientId, DrugId, UnitOfMeasurementId, DateTaken, DateReceived, ResultValue, ComparisionCharacter")] PatientDrugLevel[] drugLevels,
+                                                              [Bind("ID, SurgeryId, PatientId, SurgeryDate, Note")] PatientSurgery[] surgeries,
+                                                              [Bind("ID, AllergyIntoleranceItemType, AllergyIntoleranceItemId, IntoleranceType, Severity, Note")] PatientAllergicIntoleranceItem[] allergies,
+                                                              [Bind("ID, PulmonaryFunctionTestId, Value, ResultValue, PatientId")]PatientPulmonaryFunctionTest[] pulmonaryFunctionTest,
                                                               CaseReportFormResult[] caseReportFormResult)
         {
             if (id == null)
@@ -190,7 +209,7 @@ namespace AspergillosisEPR.Controllers
                 return NotFound();
             }
             Patient patientToUpdate = await _patientManager
-                                                    .FindPatientWithFirstLevelRelationsByIdAsync(id);
+                                                     .FindPatientWithFirstLevelRelationsByIdAsync(id);
 
             _patientManager.UpdateDiagnoses(diagnoses, patientToUpdate);
             _patientManager.UpdateDrugs(drugs, patientToUpdate, Request);
@@ -198,14 +217,17 @@ namespace AspergillosisEPR.Controllers
             _patientManager.UpdateImmunoglobines(patientImmunoglobulines, patientToUpdate);
             _patientManager.UpdatePatientRadiology(radiololgyFindings, patientToUpdate);
             _patientManager.UpdatePatientMedicalTrials(patientMedicalTrial, patientToUpdate);
-
+            _patientManager.UpdatePatientDrugLevels(drugLevels, patientToUpdate);
+            _patientManager.UpdatePatientSurgeries(surgeries, patientToUpdate);
+            _patientManager.UpdatePatientAllergiesIntolerances(allergies, patientToUpdate, Request);
+            _patientManager.UpdatePatientsPFTs(pulmonaryFunctionTest, patientToUpdate);
             _caseReportFormManager.UpdateCaseReportFormsForPatient(caseReportFormResult, patientToUpdate);
 
             _context.Entry(patientToUpdate).State = EntityState.Modified;
             if (await TryUpdateModelAsync<Patient>(patientToUpdate,
                "",
                p => p.FirstName, p => p.LastName, p => p.DOB, p => p.RM2Number,
-               p => p.Gender, p => p.PatientStatusId, p => p.DateOfDeath))               
+               p => p.Gender, p => p.PatientStatusId, p => p.DateOfDeath, p => p.GenericNote))               
             {
                 try
                 {
@@ -226,7 +248,7 @@ namespace AspergillosisEPR.Controllers
             }
 
             return Json(new { result = "ok" });
-        }        
+        }
 
         [AllowAnonymous]
         public JsonResult HasRM2Number(string RM2Number, int? Id, string initialRM2Number)
@@ -273,6 +295,16 @@ namespace AspergillosisEPR.Controllers
                 _context.Entry(trial).Reference(t => t.PatientMedicalTrialStatus).Load();
                 var medicalTrial = trial.MedicalTrial;
                 _context.Entry(medicalTrial).Reference(t => t.TrialStatus).Load();
+            }
+        }
+
+        private void LoadRelatedDrugLevels(Patient patient)
+        {
+            _context.Entry(patient).Collection(c => c.DrugLevels).Load();
+            foreach (var patientDrugLevel in patient.DrugLevels)
+            {
+                _context.Entry(patientDrugLevel).Reference<Drug>(t => t.Drug).Load();
+                _context.Entry(patientDrugLevel).Reference<UnitOfMeasurement>(t => t.UnitOfMeasurement).Load();
             }
         }
 

@@ -24,7 +24,10 @@ namespace AspergillosisEPR.Models.PatientViewModels
         public ICollection<PatientMeasurement> PatientMeasurements { get; set; }
         public List<IGrouping<string, CaseReportFormResult>> CaseReportForms { get; private set; }
         public List<PatientIgChart> IgCharts { get; set; }
-
+        public ICollection<PatientDrugLevel> DrugLevels { get; set; }
+        public ICollection<PatientSurgery> PatientSurgeries { get; set; }
+        public ICollection<PatientAllergicIntoleranceItem> PatientAllergicIntoleranceItems { get; private set; }
+        public ICollection<PatientNACDates> PatientNACDates {get; set;}
         public bool ShowDiagnoses { get; set; }
         public bool ShowDrugs { get; set; }
         public bool ShowSGRQ { get; set; }
@@ -35,6 +38,10 @@ namespace AspergillosisEPR.Models.PatientViewModels
         public bool ShowDetails { get; set; }
         public bool ShowCaseReportForms { get; set; }
         public bool ShowTrials { get; set; }
+        public bool ShowDrugLevels { get; set; }
+        public bool ShowSurgeries { get; set; }
+        public bool ShowAllergies { get; set; }
+        public bool ShowSmokingStatus { get; set; }
 
         public string SgrqImageChartFile { get; set; }
 
@@ -49,6 +56,10 @@ namespace AspergillosisEPR.Models.PatientViewModels
             ShowButtons = true;
             ShowWeight = true;
             ShowCaseReportForms = true;
+            ShowDrugLevels = true;
+            ShowSurgeries = true;
+            ShowAllergies = true;
+            ShowSmokingStatus = true;
         }
 
         public static PatientDetailsViewModel BuildPatientViewModel(AspergillosisContext context, 
@@ -92,15 +103,27 @@ namespace AspergillosisEPR.Models.PatientViewModels
             }
             patientDetailsViewModel.PatientDrugs = patient.PatientDrugs;
             LoadReleatedMedicalTrials(context, patient);
+            LoadRelatedDrugLevels(context, patient);
             patientDetailsViewModel.MedicalTrials = patient.MedicalTrials;
             patientDetailsViewModel.STGQuestionnaires = patient.STGQuestionnaires;
             patientDetailsViewModel.PatientImmunoglobulines = patient.PatientImmunoglobulines;
             patientDetailsViewModel.PatientRadiologyFindings = patient.PatientRadiologyFindings;
             patientDetailsViewModel.PatientMeasurements = patient.PatientMeasurements.OrderByDescending(q => q.DateTaken).ToList();
+            patientDetailsViewModel.DrugLevels = patient.DrugLevels.OrderByDescending(q => q.DateTaken).ToList();
+            patientDetailsViewModel.PatientSurgeries = patient.PatientSurgeries.OrderByDescending(q => q.SurgeryDate).ToList();
+            patientDetailsViewModel.PatientAllergicIntoleranceItems = patient.PatientAllergicIntoleranceItems.OrderByDescending(q => q.ID).ToList();
+            patientDetailsViewModel.PatientNACDates = patient.PatientNACDates;
+
             if (caseReportFormManager != null)
             {
                 patientDetailsViewModel.CaseReportForms = caseReportFormManager.GetGroupedCaseReportFormsForPatient(patient.ID);
             }
+            if (patientDetailsViewModel.ShowSmokingStatus)
+            {
+                context.Entry(patient).Reference(c => c.PatientSmokingDrinkingStatus).Load();
+            }
+
+            GetAllergicItemNames(context, patientDetailsViewModel);
             return patientDetailsViewModel;
         }
 
@@ -133,6 +156,50 @@ namespace AspergillosisEPR.Models.PatientViewModels
                 context.Entry(trial).Reference(t => t.PatientMedicalTrialStatus).Load();
                 var medicalTrial = trial.MedicalTrial;
                 context.Entry(medicalTrial).Reference(t => t.TrialStatus).Load();
+            }
+        }
+
+        private static void LoadRelatedDrugLevels(AspergillosisContext context, Patient patient)
+        {
+            context.Entry(patient).Collection(c => c.DrugLevels).Load();
+            foreach (var patientDrugLevel in patient.DrugLevels)
+            {
+                context.Entry(patientDrugLevel).Reference<Drug>(t => t.Drug).Load();
+                context.Entry(patientDrugLevel).Reference<UnitOfMeasurement>(t => t.UnitOfMeasurement).Load();
+            }
+        }
+
+        private static void GetAllergicItemNames(AspergillosisContext context, PatientDetailsViewModel viewModel)
+        {
+            foreach (var item in viewModel.PatientAllergicIntoleranceItems)
+            {
+                switch (item.AllergyIntoleranceItemType)
+                {
+                    case "Food":
+                        var allergyFoodItem = context.Foods
+                                                 .Where(i => i.ID == item.AllergyIntoleranceItemId)
+                                                 .FirstOrDefault();
+                        if (allergyFoodItem != null) item.AllergicItemName = allergyFoodItem.Name;
+                        break;
+                    case "Drug":
+                        var allergyDrugItem = context.Drugs
+                                                .Where(i => i.ID == item.AllergyIntoleranceItemId)
+                                                .FirstOrDefault();
+                        if (allergyDrugItem != null) item.AllergicItemName = allergyDrugItem.Name;
+                        break;
+                    case "Fungi":
+                        var fungiAllergicItem = context.Fungis
+                                                .Where(i => i.ID == item.AllergyIntoleranceItemId)
+                                                .FirstOrDefault();
+                        if (fungiAllergicItem != null) item.AllergicItemName = fungiAllergicItem.Name;
+                        break;
+                    case "Other":
+                        var otherAllergicItem = context.OtherAllergicItems
+                                                .Where(i => i.ID == item.AllergyIntoleranceItemId)
+                                                .FirstOrDefault();
+                        if (otherAllergicItem != null) item.AllergicItemName = otherAllergicItem.Name;
+                        break;
+                }
             }
         }
 

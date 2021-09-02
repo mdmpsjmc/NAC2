@@ -12,6 +12,8 @@ namespace AspergillosisEPR.Models.Patients
         public int ID { get; set; }
         public int PatientId { get; set; }
         public int ImmunoglobulinTypeId { get; set; }
+        public string SampleId { get; set; }
+        public string Range { get; set; }
         [DataType(DataType.Date)]
         [Display(Name = "Date Taken")]
         [DisplayFormat(DataFormatString = "{dd-MM-yyyy}")]
@@ -19,11 +21,12 @@ namespace AspergillosisEPR.Models.Patients
         public decimal Value { get; set;  }
         public ImmunoglobulinType ImmunoglobulinType { get; set; }
 
+
         override public List<string> ExcludedProperties()
         {
             return new List<string>()
             {
-                "PatientId", "Patient", "ImmunoglobulinType"
+                "PatientId", "Patient", "ImmunoglobulinType", "SampleId", "Range"
             };
         }
     }

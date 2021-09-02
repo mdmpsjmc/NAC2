@@ -37,6 +37,11 @@
                             <a href="#radiology" data-toggle="tab"><i class="fa fa-fw fa-lg fa-stethoscope"></i> Radiology</a>
                         </li>
                         <li>
+                            <a href="/patients/@(Model.ID)/PFTs/Edit" data-toggle="tabajax" data-target="#pfts">
+                                <i class="fa fa-fw fa-lg fa-user-md"></i> PFTs
+                            </a>
+                        </li>
+                        <li>
                             <a href="#medical-trials" data-toggle="tab">
                                 <span class="mi-patient-chart-3879 tab-styled-custom2">
                                     <span class="path2"></span>
@@ -53,7 +58,7 @@
                                 @{ await Html.RenderPartialAsync("/Views/Patients/Edit/_DetailsTab.cshtml"); }
                             </div>
                             <div class="tab-pane fade" id="diagnosis">
-                                @{ await Html.RenderPartialAsync("/Views/Patients/Edit/_DiagnosisTab.cshtml"); }
+                                @{ await Html.RenderPartialAsync("/Views/Patients/Edit/_DiagnosesTab.cshtml"); }
                             </div>
                             <div class="tab-pane fade" id="drugs">
                                 @{ await Html.RenderPartialAsync("/Views/Patients/Edit/_DrugsTab.cshtml"); }
@@ -67,6 +72,8 @@
                             <div class="tab-pane fade ig" id="radiology">
                                 @{ await Html.RenderPartialAsync("/Views/Patients/Edit/_RadiologyTab.cshtml"); }
                             </div>
+                            <div class="tab-pane fade ig" id="pfts">                               
+                            </div>
                             <div class="tab-pane fade" id="medical-trials">
                                 @{ await Html.RenderPartialAsync("/Views/Patients/Edit/_MedicalTrials.cshtml"); }
                             </div>
@@ -75,7 +82,6 @@
                             </div>
                         </div>
                     </form>
-
                 </div>
             </div>
             <div class="modal-footer">

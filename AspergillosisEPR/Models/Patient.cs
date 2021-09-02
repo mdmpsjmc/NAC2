@@ -1,4 +1,7 @@
-﻿using AspergillosisEPR.Lib.Search;
+﻿using AspergillosisEPR.Data;
+using AspergillosisEPR.Lib;
+using AspergillosisEPR.Lib.Importers.ManARTS;
+using AspergillosisEPR.Lib.Search;
 using AspergillosisEPR.Models.CaseReportForms;
 using AspergillosisEPR.Models.Patients;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +23,6 @@ namespace AspergillosisEPR.Models
         [Required]
         [Display(Name = "First Name")]
         public string FirstName { get; set; }
-        [Required]
         public string Gender { get; set; }
 
         [Required]
@@ -34,13 +36,16 @@ namespace AspergillosisEPR.Models
         [Remote("HasRM2Number", "Patients", AdditionalFields = "ID, InitialRM2Number",
                 ErrorMessage = "Patient RM2 Number already exists in database")]
         public string RM2Number { get; set; }
-
         public int? PatientStatusId { get; set; }
 
         [DataType(DataType.Date)]
         [Display(Name = "Date of Death")]
         [DisplayFormat(DataFormatString = "{dd-MM-yyyy}")]
         public DateTime? DateOfDeath { get; set; }
+        public string NhsNumber { get; set; }
+        public string GenericNote { get; set; }
+        public string PostCode { get; set; }
+        public double DistanceFromWythenshawe { get; set; }
 
         public ICollection<PatientDiagnosis> PatientDiagnoses { get; set; }
         public ICollection<PatientDrug> PatientDrugs { get; set; }
@@ -50,10 +55,17 @@ namespace AspergillosisEPR.Models
         public ICollection<PatientMeasurement> PatientMeasurements { get; set; }
         public ICollection<CaseReportFormResult> CaseReportFormResults { get; set; }
         public ICollection<PatientMedicalTrial> MedicalTrials { get; set; }
-
+        public ICollection<PatientDrugLevel> DrugLevels { get; set; }
+        public ICollection<PatientSurgery> PatientSurgeries { get; set; }
+        public PatientSmokingDrinkingStatus PatientSmokingDrinkingStatus { get; set; }
+        public ICollection<PatientAllergicIntoleranceItem> PatientAllergicIntoleranceItems { get; set; }
+        public ICollection<PatientPulmonaryFunctionTest> PatientPulmonaryFunctionTests { get; set; }
         public PatientStatus PatientStatus { get; set; }
-       
-
+        public ICollection<PatientNACDates> PatientNACDates { get; set; } = new List<PatientNACDates>();
+        public ICollection<PatientHaematology> PatientHaematologies { get; set;}
+        public ICollection<PatientTestResult> PatientTestResults { get; set; }
+        public ICollection<PatientMRCScore> PatientMRCScores { get; set; } = new List<PatientMRCScore>();
+           
         [Display(Name = "Full Name")]
         public string FullName
         {
@@ -116,6 +128,28 @@ namespace AspergillosisEPR.Models
         public string Initials()
         {
             return FirstName.Substring(0, 1) + LastName.Substring(0, 1);
+        }
+
+        public Position PatientPosition(AspergillosisContext context)
+        {
+            if (PostCode == null) return new Position();
+            var outcode = PostCode.Split(" ")[0];           
+            var postcode = context.UKOutwardCodes.FirstOrDefault(pc => pc.Code.Equals(outcode));
+            if (postcode == null) return new Position();
+            var position = new Position();
+            position.Latitude = postcode.Latitude;
+            position.Longitude = postcode.Longitude;
+            return position;
+        }
+
+        public void SetDistanceFromWythenshawe(AspergillosisContext context)
+        {
+             
+            var wythenshawePosition = UKOutwardCode.WythenshawePosition(context);
+            var patientPosition = PatientPosition(context);
+            if (patientPosition.Latitude == 0 || patientPosition.Longitude == 0) return;
+
+            DistanceFromWythenshawe = new Haversine().Distance(wythenshawePosition, patientPosition, DistanceType.Miles);             
         }
     }
 }

@@ -1,0 +1,55 @@
+﻿@model AspergillosisEPR.Models.PatientViewModels.PatientDetailsViewModel
+@if (Model.DrugLevels != null && Model.DrugLevels.Any())
+{
+    var groupedDrugs = Model.DrugLevels.OrderByDescending(ig => ig.DateTaken).GroupBy(ig => ig.Drug.Name);
+    @foreach (var drugLevelGroup in groupedDrugs.ToList())
+    {
+        <h3>@(drugLevelGroup.Key)</h3>
+        @if (Model.ShowButtons)
+        {
+            <div class="col-sm-12" id="drug-levels-chart">
+                <a href="@Url.Action("DrugLevels", "Charts", new { patientId= Model.Patient.ID, drug=drugLevelGroup.Key})" data-id="@(Model.Patient.ID)" class="pdf-hide btn-hide btn-lg disable-default btn btn-primary show-drug-levels-chart" style="padding: 5px; margin-bottom: 5px">
+                    <i class="fa fa-line-chart"></i>&nbsp; Show Chart
+                </a>
+            </div>
+        }
+        <div class="col-sm-12">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Lab Number</th>
+                        <th>Date Taken</th>
+                        <th>Date Received</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var drugLevel in drugLevelGroup)
+                    {
+                        <tr>
+                            <td>@drugLevel.ID</td>
+                            <td>@(drugLevel.LabNumber)</td>
+                            <td>@(drugLevel.DateTaken.ToString("dd/MM/yyyy"))</td>
+                            <td>@(drugLevel.DateReceived.ToString("dd/MM/yyyy"))</td>
+                            <td>@(drugLevel.Result())</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+
+}
+else
+{
+    <div class="col-sm-12">
+        <div class="alert alert-info alert-block">
+            <h4 class="alert-heading">Info!</h4>
+            <i class="fa fa-info-circle"></i>
+            This patient does not currently have any drug levels in database
+        </div>
+    </div>
+
+}
