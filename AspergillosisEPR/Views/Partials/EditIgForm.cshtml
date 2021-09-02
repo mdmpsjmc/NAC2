@@ -1,0 +1,32 @@
+﻿@model AspergillosisEPR.Models.Patients.PatientImmunoglobulin;
+<div class="ig-row">
+    <fieldset>
+        <div class="row">
+            <section class="col col-4">
+                <label class="select">
+                    <label asp-for="ImmunoglobulinTypeId" class="select">
+                        @Html.DropDownList("PatientImmunoglobulines[" + (string)ViewBag.Index + "].ImmunoglobulinTypeId", (SelectList)ViewBag.ImmunoglobulinTypeId, "Select Ig Type")
+                        <i></i>
+                        <span asp-validation-for="ImmunoglobulinTypeId" class="text-danger"></span>
+                    </label>
+                </label>
+            </section>
+            <section class="col col-4">
+                <label asp-for="DateTaken" class="input">
+                <i class="icon-append fa fa-calendar"></i>
+                <input asp-for="@(Model.DateTaken)" name="PatientImmunoglobulines[@((string)ViewBag.Index)].DateTaken"  id="PatientImmunoglobulines_@((string)ViewBag.Index)__DateTaken" placeholder="Start Date" class="datepicker" />
+                </label>
+            </section>
+            <section class="col col-3">
+                <label class="input" asp-for="Value">
+                    <input asp-for="@(Model.Value)" name="PatientImmunoglobulines[@((string)ViewBag.Index)].Value" id="PatientImmunoglobulines_@((string)ViewBag.Index)__Value" placeholder="Value" />
+                </label>
+            </section>
+        </div>
+        <div class="row">
+            <a href="javascript:void(0)" class="btn btn-danger remove-new-ig pull-right btn-lg" data-what="Patients immuglobuline entry" data-toggle="tooltip" data-title="Remove Patients Immuglobuline Entry?" style="padding: 5px">
+                <i class="fa fa-trash"></i>
+            </a>
+        </div>
+    </fieldset>
+</div>

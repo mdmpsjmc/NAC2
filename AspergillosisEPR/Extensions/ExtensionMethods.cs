@@ -26,12 +26,36 @@ namespace AspergillosisEPR.Extensions
             );
         }
 
+        public static string[] SplitCamelCaseArray(this string source)
+        {
+            return Regex.Split(source, @"(?<!^)(?=[A-Z])");
+        }
+
         public static string FirstCharacterToLower(this string str)
         {
             if (string.IsNullOrEmpty(str))
                 return str;
 
             return Char.ToLowerInvariant(str[0]) + str.Substring(1);
+        }
+
+        public static string GetValueFromProperty(object obj, string Name)
+        {
+            var methods = Name.Split('.');
+
+            object current = obj;
+            object result = null;
+            foreach (var method in methods)
+            {
+                var prop = current.GetType().GetProperty(method);
+                result = prop != null ? prop.GetValue(current, null) : null;
+                current = result;
+            }
+            return result == null ? string.Empty : result.ToString();
+        }
+        public static object GetPropertyValue(this object obj, string propertyName)
+        {
+            return obj.GetType().GetProperty(propertyName).GetValue(obj, null);
         }
     }
 }

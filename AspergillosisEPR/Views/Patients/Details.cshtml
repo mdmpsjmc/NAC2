@@ -1,4 +1,4 @@
-@model AspergillosisEPR.Models.PatientViewModels.PatientDetailsViewModel
+﻿@model AspergillosisEPR.Models.PatientViewModels.PatientDetailsViewModel
 <div class="modal fade" tabindex="-1" role="dialog" id="details-modal">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -14,7 +14,7 @@
                             <a href="#details" data-toggle="tab"><i class="fa fa-fw fa-lg fa-info-circle"></i> Details </a>
                         </li>
                         <li>
-                            <a href="#diagnosis" data-toggle="tab"><i class="fa fa-fw fa-lg fa-heartbeat"></i> Diagnosis</a>
+                            <a href="#diagnosis" data-toggle="tab"><i class="fa fa-fw fa-lg fa-heartbeat"></i> Diagnoses</a>
                         </li>
                         <li>
                             <a href="#drugs" data-toggle="tab"><i class="fa fa-fw fa-lg fa-medkit"></i> Drugs</a>
@@ -22,29 +22,87 @@
                         <li>
                             <a href="#stg" data-toggle="tab"><i class="fa fa-fw fa-lg fa-file-text"></i> SGRQ</a>
                         </li>
+                        <li>
+                            <a href="#ig" data-toggle="tab">
+                                <span class="mi-blood-transfusion-3870 tab-styled-custom">
+                                    <span class="path2"></span>
+                                    <span class="fa-fw fa-lg path3"></span>
+                                </span> Ig
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#radiology" data-toggle="tab"><i class="fa fa-fw fa-lg fa-stethoscope"></i> Radiology</a>
+                        </li>
+                        <li>
+                            <a href="#measurements" data-toggle="tab"><i class="fa fa-fw fa-lg fa-dashboard"></i> Weight</a>
+                        </li>
+                        <li>
+                            <a href="#medical-trials" data-toggle="tab">
+                                <span class="mi-patient-chart-3879 tab-styled-custom2">
+                                    <span class="path2"></span>
+                                </span> Trials
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#case-report-forms" data-toggle="tab"><i class="fa fa-fw fa-lg fa-th-list"></i> Case Report Forms</a>
+                        </li>
                     </ul>
 
                     <div id="details-tab-content" class="tab-content padding-10">
+                        <div class="tab-pane fade ig" id="measurements">
+                            @Html.Partial("/Views/Patients/Details/Measurements.cshtml")
+                        </div>
                         <div class="tab-pane fade in active details" id="details">
                            @Html.Partial("/Views/Patients/Details/Details.cshtml")
                         </div>
-                        <div class="tab-pane fade details" id="diagnosis">
+                        <div class="tab-pane fade diagnosis" id="diagnosis">
                            @Html.Partial("/Views/Patients/Details/Diagnosis.cshtml")
                         </div>
-                        <div class="tab-pane fade details" id="drugs">
+                        <div class="tab-pane fade drugs" id="drugs">
                            @Html.Partial("/Views/Patients/Details/Drugs.cshtml")
                         </div>
-                        <div class="tab-pane fade details" id="stg">     
+                        <div class="tab-pane fade stg" id="stg">     
                            @Html.Partial("/Views/Patients/Details/STGQuestionnaire.cshtml")
+                        </div>
+                        <div class="tab-pane fade ig" id="ig">
+                            @Html.Partial("/Views/Patients/Details/Ig.cshtml")
+                        </div>
+                        <div class="tab-pane fade radiology" id="radiology">
+                            @Html.Partial("/Views/Patients/Details/Radiology.cshtml")
+                        </div>
+                        <div class="tab-pane fade measurements" id="measurements">
+                            @Html.Partial("/Views/Patients/Details/Measurements.cshtml")
+                        </div>
+                        <div class="tab-pane fade" id="medical-trials">
+                            @{ await Html.RenderPartialAsync("/Views/Patients/Details/_MedicalTrials.cshtml"); }
+                        </div>
+                        <div class="tab-pane fade case-report-forms" id="case-report-forms">
+                            @Html.Partial("/Views/Patients/CaseReportForms/Forms.cshtml")
                         </div>
                     </div>
 
                 </div>
             </div>
             <div class="modal-footer">
+                @if (Model.ShowButtons)
+                {
+                <a href="@Url.Action("Details", "PdfExports", new { id = Model.Patient.ID })" disabled="disabled" class="btn btn-danger export-trigger" data-file="pdf" data-id="@Model.Patient.ID" >
+                    <i class="fa fa-file-pdf-o"></i>&nbsp; PDF
+                </a>
+                <a href="@Url.Action("Details", "ExcelExports", new { id = Model.Patient.ID })" disabled="disabled" data-file="excel" class="btn btn-success export-trigger" data-id="@Model.Patient.ID">
+                    <i class="fa fa-file-excel-o"></i>&nbsp; Excel
+                </a>
+                }
                 <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="$('div.modal-backdrop.in').remove()">Close Window</button>
             </div>
         </div>
     </div>
 </div>
-@Html.Partial("/Views/PatientCharts/_SGRQ.cshtml")
+<img src="" class="chart-image hide" id="sgrq-chart-image" />
+<canvas id="sgrq-chart-content" width="800" height="400" class="hide"></canvas>
+<div id="ig-charts"></div>
+<div id="measurement-content-popup"></div>
+@Html.Partial("/Views/Patients/Charts/_SGRQ.cshtml")
+@Html.Partial("/Views/Patients/Charts/_Ig.cshtml")
+@Html.Partial("/Views/Patients/Charts/_Measurements.cshtml")
+@Html.Partial("/Views/Patients/Details/Export/_Options.cshtml")

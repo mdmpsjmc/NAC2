@@ -14,14 +14,24 @@ using Audit.Core;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http.Features;
+using DinkToPdf;
+using DinkToPdf.Contracts;
+using System.Runtime.Loader;
+using System.Reflection;
+using static AspergillosisEPR.Services.ViewToString;
+using AspNetCore.RouteAnalyzer;
 
 namespace AspergillosisEPR
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+
+
+        public IHostingEnvironment HostingEnvironment { get; }
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
+            HostingEnvironment = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -41,12 +51,15 @@ namespace AspergillosisEPR
             {
                 options.MultipartBodyLengthLimit = 100000000;
             });
+
             // Add application services.
 
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<PatientViewModel>();
             services.AddMvc();
-            services.AddMvc().AddJsonOptions(options => {
+            services.AddRouteAnalyzer();
+            services.AddMvc().AddJsonOptions(options =>
+            {
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 options.SerializerSettings.MaxDepth = 1;
@@ -59,7 +72,17 @@ namespace AspergillosisEPR
                 .IdColumnName("ID")
                 .JsonColumnName("Data")
                 .LastUpdatedColumnName("LastUpdatedDate"));
+            ConfigurePdfService(services);
+            services.AddScoped<IViewRenderService, ViewRenderService>();
+        }
 
+        private void ConfigurePdfService(IServiceCollection services)
+        {
+            CustomAssemblyLoadContext context = new CustomAssemblyLoadContext();
+            string path = @"C:\"+"libwkhtmltox.dll";
+            context.LoadUnmanagedLibrary(path);
+            services.AddSingleton(typeof(IConverter),
+                                         new SynchronizedConverter(new PdfTools()));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -80,11 +103,18 @@ namespace AspergillosisEPR
 
             app.UseMvc(routes =>
             {
+                routes.MapRouteAnalyzer("/routes");
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
+                routes.MapRoute(
+                     name: "AnonPatients",
+                     template: "Anonymous/Patients/{action}/{id?}"
+                 );
             });
+
             await CreateRoles(app);
+            await CreateAnonymousRole(app);
         }
 
         private async Task CreateRoles(IApplicationBuilder app)
@@ -135,7 +165,43 @@ namespace AspergillosisEPR
             }
         }
 
-    
+        private async Task CreateAnonymousRole(IApplicationBuilder app)
+        {
+            using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                var RoleManager = serviceScope.ServiceProvider.GetService<RoleManager<ApplicationRole>>();
+                var role = new ApplicationRole
+                {
+                    Name = "Anonymous Role",
+                    NormalizedName = "Anonymous Role".ToUpper(),
+                    CreatedAt = DateTime.Now,
+                    Description = "User with this role can read information in database in an anonymised way where no personal information is revealed."
+                };
+                var roleExist = await RoleManager.RoleExistsAsync(role.Name);
+                if (!roleExist)
+                {
+                   IdentityResult roleResult = await RoleManager.CreateAsync(role);
+                }                
+            }
+        }
+
+
+        internal class CustomAssemblyLoadContext : AssemblyLoadContext
+        {
+            public IntPtr LoadUnmanagedLibrary(string absolutePath)
+            {
+                return LoadUnmanagedDll(absolutePath);
+            }
+            protected override IntPtr LoadUnmanagedDll(String unmanagedDllName)
+            {
+                return LoadUnmanagedDllFromPath(unmanagedDllName);
+            }
+      
+            protected override Assembly Load(AssemblyName assemblyName)
+            {
+                throw new NotImplementedException();
+            }
+        }
 
     }
 

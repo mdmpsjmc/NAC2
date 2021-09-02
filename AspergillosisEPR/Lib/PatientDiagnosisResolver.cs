@@ -1,6 +1,7 @@
 ﻿using AspergillosisEPR.Data;
 using AspergillosisEPR.Helpers;
 using AspergillosisEPR.Models;
+using AspergillosisEPR.Models.Patients;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +65,7 @@ namespace AspergillosisEPR.Lib
                         _currentDiagnosisCategory = GetDiagnosisCategoryByName("Primary");                        
                     } else if (_discoveredDiagnoses.Count == 1) 
                     {
-                        _currentDiagnosisCategory = GetDiagnosisCategoryByName("Secondary");                       
+                        _currentDiagnosisCategory = GetDiagnosisCategoryByName("Other");                       
                     }
                     DiagnosisType diagnosisType = GetDiagnosisByName(diagnosisName);
                     CreateAndAddPatientDiagnosis(diagnosisType);

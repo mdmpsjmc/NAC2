@@ -1,4 +1,6 @@
 ﻿@model AspergillosisEPR.Models.Patient
+@using AspergillosisEPR.Models.Patients;
+
 <div class="modal fade" tabindex="-1" role="dialog" id="edit-modal">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -23,6 +25,27 @@
                         <li>
                             <a href="#stg" data-toggle="tab"><i class="fa fa-fw fa-lg fa-file-text"></i> SGRQ</a>
                         </li>
+                        <li>
+                            <a href="#ig" data-toggle="tab">
+                                <span class="mi-blood-transfusion-3870 tab-styled-custom">
+                                    <span class="path2"></span>
+                                    <span class="fa-fw fa-lg path3"></span>
+                                </span> Ig
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#radiology" data-toggle="tab"><i class="fa fa-fw fa-lg fa-stethoscope"></i> Radiology</a>
+                        </li>
+                        <li>
+                            <a href="#medical-trials" data-toggle="tab">
+                                <span class="mi-patient-chart-3879 tab-styled-custom2">
+                                    <span class="path2"></span>
+                                </span> Trials
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#case-report-forms" data-toggle="tab"><i class="fa fa-fw fa-lg fa-th-list"></i> Case Report Forms</a>
+                        </li>
                     </ul>
                     <form asp-controller="Patients" asp-action="Edit" class="smart-form" data-ajax="true" data-ajax-method="POST" id="edit-patient-form">
                         <div id="new-patient-tab-content" class="tab-content padding-10">
@@ -37,6 +60,18 @@
                             </div>
                             <div class="tab-pane fade" id="stg">
                                 @{ await Html.RenderPartialAsync("/Views/Patients/Edit/_STGQuestionnaire.cshtml"); }
+                            </div>
+                            <div class="tab-pane fade ig" id="ig">
+                                @{ await Html.RenderPartialAsync("/Views/Patients/Edit/_IgTab.cshtml"); }
+                            </div>
+                            <div class="tab-pane fade ig" id="radiology">
+                                @{ await Html.RenderPartialAsync("/Views/Patients/Edit/_RadiologyTab.cshtml"); }
+                            </div>
+                            <div class="tab-pane fade" id="medical-trials">
+                                @{ await Html.RenderPartialAsync("/Views/Patients/Edit/_MedicalTrials.cshtml"); }
+                            </div>
+                            <div class="tab-pane fade case-report-forms" id="case-report-forms">
+                                @Html.Partial("/Views/Patients/CaseReportForms/_Edit.cshtml")
                             </div>
                         </div>
                     </form>

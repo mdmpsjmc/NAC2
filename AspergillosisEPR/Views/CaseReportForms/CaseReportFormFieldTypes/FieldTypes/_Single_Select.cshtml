@@ -1,0 +1,16 @@
+﻿@model AspergillosisEPR.Models.CaseReportForms.ViewModels.CaseReportFormFieldViewModel;
+<div class="row">
+    <section class="col col-4 label-render">
+        <label>@Model.Field.Label</label>
+    </section>
+    <section class="col col-5">
+        <label class="select">
+            <label class="select">
+                @Html.DropDownList("CaseReportFormResult[" + Model.FormIndex + "].Results[" + Model.Index + "].SelectedId", Model.Field.Options.Select(o => o.DropdownItem()).ToList(), "Select " + Model.Field.Label)
+                <i></i>
+                @Html.Hidden("CaseReportFormResult[" + Model.FormIndex + "].Results[" + Model.Index + "].CaseReportFormFieldId", Model.Field.ID)
+                @Html.Hidden("CaseReportFormResult[" + Model.FormIndex + "].Results[" + Model.Index + "].ValidationResult", "")
+            </label>            
+        </label>
+    </section>
+</div>

@@ -97,9 +97,30 @@ body.smart-style-6 #logo-group > span#logo:before {
     margin: 0px !important;
 }
 
-div#diagnosis {
+div#diagnosis,
+div#stg,
+div#radiology,
+div#measurements{
     max-height: 600px;
     overflow-y: scroll;
+}
+
+div.tab-pane#ig{
+    overflow-y: auto;
+    min-height: 400px;
+    max-height: 400px
+}
+
+div.tab-pane#medical-trials {
+    overflow-y: auto;
+    min-height: 400px;
+    max-height: 400px
+}
+
+div.ig-chart-modal .modal-body {
+    overflow-y: auto;
+    min-height: 500px;
+    max-height: 500px
 }
 
 .profile-pic {
@@ -174,12 +195,14 @@ label.side-effects {
 div#details-tab-content {
     min-height: 320px !important;
 }
-.smart-form ul {
+.smart-form ul#details-tab {
     padding-left: 30px !important;
 }
 
-div#new-patient-modal .modal-dialog {
-    min-width: 700px !important;
+div#new-patient-modal .modal-dialog,
+div#details-modal .modal-dialog,
+div#edit-modal .modal-dialog {
+    min-width: 850px !important;
 }
 
 div#details-tab-content div#stg {
@@ -187,13 +210,23 @@ div#details-tab-content div#stg {
     max-height: 450px;
 }
 
-div#new-patient-tab-content div#stg {
+div#new-patient-tab-content div#stg{
     overflow-y: auto;
     max-height: 450px;
 }
 
+div#visits-tab-content {
+    margin-top: 70px !important;
+}
+div#edit-case-report-form-section-modal .modal-body,
+div#edit-case-report-form-modal .modal-body,
+div#render-crf-modal .modal-body,
+div#case-report-form,
+div.case-report-forms {
+    overflow-y: scroll;
+    max-height: 600px;
+}
 /* hide native chrome datepicker */
-
 input::-webkit-calendar-picker-indicator {
     display: none;
 }
@@ -222,14 +255,17 @@ div.stg-form{
     min-height: 250px;
 }
 
-div#sgrq-chart {
+div#sgrq-chart,
+div#immunology-chart {
     padding-bottom: 20px;
 }
 
-div.sgrq-modal .modal-dialog {
-  width: 900px;
-  height: 600px;
-  padding: 0;
+div.sgrq-modal .modal-dialog,
+div.ig-chart-modal .modal-dialog,
+div.measurement-chart-modal .modal-dialog {
+    width: 900px;
+    height: 600px;
+    padding: 0;
 }
 
 div.sgrq-modal .modal-content {
@@ -239,4 +275,179 @@ div.sgrq-modal .modal-content {
 div.dt-buttons {
     margin-right: 20px;
     float: right !important;
+}
+
+.tab-styled-custom {
+    font-size: 30px;
+    margin-left: 10px;
+    color: gray;
+    width: 20px;
+    float: left;
+    display: block;
+    margin-top: -4px;
+    opacity: .5;
+}
+
+.tab-styled-custom2 {
+    margin-top: 2px;
+    font-size: 41px;
+    margin-left: 24px;
+    width: 10px;
+    color: gray;
+    display: block;
+    float: left;
+    margin-top: -7px;
+    margin-right: -10px;
+    opacity: .5;
+}
+    .dt-button {
+    color: white !important;
+    font-size: 15px !important;
+}
+
+.btn-excel {
+    border-color: #388E3C;
+    background-color: #4CAF50;
+}
+
+.dt-button {
+    background-image: none !important;
+    font-size: 22px !important;
+    padding: 3px 8px !important;
+}
+
+div.dt-button-collection .dt-button {
+    color: black !important;
+    font-size: 16px !important;
+}
+
+.settings-tab-styled {
+    font-size: 43px;
+    margin-left: 34px;
+    color: gray;
+    width: 0px;
+    float: left;
+    display: block;
+    margin-top: -9px;
+    opacity: .5;
+    font-weight: bold;
+    height: 40px
+}
+
+
+span.tab-label {
+    margin-top: 8px;
+    display: block;
+    width: 125px;
+    float: left;
+}
+
+.select2-container {
+    border: 1px solid #aaa;
+}
+
+.select2-result-repository {
+    padding-top: 4px;
+    padding-bottom: 3px;
+}
+
+.select2-result-repository__avatar {
+    float: left;
+    width: 60px;
+    margin-right: 10px;
+}
+select2-result-repository__avatar img {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 2px !important;
+}
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: #ddd;
+}
+
+select2-result-repository__meta {
+    margin-left: 70px;
+}
+
+.select2-result-repository__title {
+    color: black;
+    font-weight: 700;
+    word-wrap: break-word;
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+
+.select2-result-repository__description {
+    font-size: 13px;
+    color: #777;
+    margin-top: 4px;
+}
+
+.select2-container--default .select2-results > .select2-results__options {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.select2-results__options {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #5897fb;
+    color: white;
+}
+
+.select2-results__option[aria-selected] {
+    cursor: pointer;
+}
+
+.select2-close-mask {
+    z-index: 99999999;
+}
+
+.select2-dropdown {
+    z-index: 99999999;
+}
+span.select2-container {
+    z-index: 99999999;
+}
+div#examinations-tabs{
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+div#new-measurement-modal,
+div#new-stg-modal,
+div#new-ig-modal,
+div#new-radiology-modal {
+    z-index: 1100 !important;
+}
+
+div#visit-details-modal .modal-dialog {
+    min-width: 850px !important;
+}
+
+form#new-case-report-form-option-group span.select2-container.select2-container--default {
+    width: 100%;
+}
+
+.label-render {
+    margin-top: 9px;
+    font-weight: bold;
+}
+
+div#form-sections {
+    padding-left: 80px;
+}
+
+div.crf-form-below {
+    width: 750px !important;
+    float: left;
+}
+
+h3.form-category {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }

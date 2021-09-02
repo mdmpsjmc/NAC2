@@ -1,0 +1,48 @@
+﻿@model AspergillosisEPR.Models.PatientViewModels.PatientDetailsViewModel
+@if (Model.ShowButtons)
+{
+    <div class="col-sm-12" id="immunology-chart">
+        <a href="@Url.Action("Immunology", "Charts", new { patientId= Model.Patient.ID})" data-id="@(Model.Patient.ID)" class="pdf-hide btn-hide btn-lg disable-default btn btn-primary show-immunology-chart" style="padding: 5px">
+            <i class="fa fa-line-chart"></i>&nbsp; Show Charts
+        </a>
+    </div>
+
+}
+@if (Model.PatientImmunoglobulines != null && Model.PatientImmunoglobulines.Any())
+{
+    @foreach (var igGroup in Model.PatientImmunoglobulines.OrderByDescending(ig => ig.DateTaken).GroupBy(ig => ig.ImmunoglobulinTypeId))
+    {
+        <div class="col-sm-12">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Ig Type</th>
+                        <th>Date</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ig in igGroup)
+                    {
+                    <tr>
+                        <td>@(ig.ImmunoglobulinType.Name)</td>
+                        <td>@(ig.DateTaken.ToString("dd/MM/yyyy"))</td>
+                        <td>@(ig.Value.ToString())</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+else
+{
+    <div class="col-sm-12">
+        <div class="alert alert-info alert-block">
+            <h4 class="alert-heading">Info!</h4>
+            <i class="fa fa-info-circle"></i>
+            This patient does not currently take any immunoglobuline levels recorded in database
+        </div>
+    </div>
+
+}

@@ -1,0 +1,40 @@
+﻿@model AspergillosisEPR.Models.CaseReportForms.ViewModels.CaseReportFormFieldResultViewModel;
+<div class="row">
+    <section class="col col-4 label-render">
+        <label>@Model.Field.Label</label>
+    </section>
+    <section class="col col-12">
+        <label class="select">
+            <label class="select">
+                <select multiple="multiple" name="CaseReportFormResult[@(Model.FormIndex)].Results[@(Model.Index)].SelectedIds">
+                @foreach (var option in Model.Field.Options.Select(o => o.DropdownItem()))
+                {
+                    if (Model.Result != null)
+                    {
+                        var isSelected = Model
+                                            .Result
+                                            .Options
+                                            .Select(o => o.CaseReportFormOptionChoiceId.ToString()).Contains(option.Value);
+                        option.Selected = isSelected;
+                        if (option.Selected)
+                        {
+                            <option value="@option.Value" selected="selected">@option.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@option.Value" >@option.Text</option>
+                        }
+                    }
+                    else
+                    {
+                        <option></option>
+                    }
+                }
+                </select>
+                @Html.Hidden("CaseReportFormResult[" + Model.FormIndex + "].Results[" + Model.Index + "].CaseReportFormFieldId", Model.Field.ID)
+                @Html.Hidden("CaseReportFormResult[" + Model.FormIndex + "].Results[" + Model.Index + "].ValidationResult", "")
+                @Html.Hidden("CaseReportFormResult[" + Model.FormIndex + "].Results[" + Model.Index + "].ID", Model?.Field?.ID)
+            </label>
+        </label>
+    </section>
+</div>

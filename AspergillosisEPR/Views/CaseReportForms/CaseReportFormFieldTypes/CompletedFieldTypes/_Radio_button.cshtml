@@ -1,0 +1,25 @@
+﻿@model AspergillosisEPR.Models.CaseReportForms.ViewModels.CaseReportFormFieldResultViewModel;
+<fieldset>
+    <div class="form">
+        <div class="form-group">
+            <label class="col-md-2 control-label">@Model.Field.Label</label>
+            <div class="col-md-12">
+
+                @foreach (var option in @Model.Field.Options)
+                {
+                    var ids = Model?.Result.Options.Select(o => o.CaseReportFormOptionChoiceId).ToList();
+                    var selected = ids.Where(id => ids.Contains(option.CaseReportFormOptionChoiceId)).FirstOrDefault();
+                    var isChecked = selected == option.CaseReportFormOptionChoiceId;
+                    <label class="radio">
+                        <input type="radio" class="radiobox" name="Results[@(Model.Index)].SelectedId" value="@option.CaseReportFormOptionChoiceId" @(isChecked ? "checked=checked" : "") disabled="disabled">
+                        <span>@option.Option.Name</span>
+                    </label>
+                    
+                }
+                @Html.Hidden("Results["+ Model.Index + "].CaseReportFormFieldId", Model.Field.ID)
+                @Html.Hidden("Results[" + Model.Index + "].ValidationResult", "")
+            </div>
+        </div>
+    </div>
+</fieldset>
+    

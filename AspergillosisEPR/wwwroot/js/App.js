@@ -16,6 +16,19 @@
     return {
         init: function () {
             onLogoutLinkClick();
+            Patients.init();
+            Settings.init();
+            Users.init();
+            Imports.init();
+            DiagnosisTypes.init();
+            SideEffects.init();
+            Charts.init();
+            Search.init();
+            Radiology.init();
+            PatientVisits.init();
+            CaseReportForms.init();
+            AnonPatients.init();
+            MedicalTrials.init();
         }
     }
 

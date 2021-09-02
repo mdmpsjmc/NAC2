@@ -1,0 +1,31 @@
+﻿@model AspergillosisEPR.Models.PatientViewModels.PatientDetailsViewModel;
+@using AspergillosisEPR.Models.CaseReportForms.ViewModels;
+@if (Model.CaseReportForms != null && Model.CaseReportForms.Any())
+ {
+   int globalCursor = 0;
+   foreach (var category in Model.CaseReportForms)
+   {
+        <h3>@category.Key</h3>
+        <div class="panel-group smart-accordion-default" id="accordion-2">
+
+        @foreach (var formResult in category)
+        {
+            var resultWithIndex = new CaseReportFormResultWithGlobalIndex();
+            resultWithIndex.Patient = Model.Patient;
+            resultWithIndex.Result = formResult;
+            resultWithIndex.GlobalIndex = globalCursor;
+            @Html.Partial("/Views/Patients/CaseReportForms/_FormResult.cshtml", resultWithIndex)
+        }
+      </div>
+    }
+}
+else
+{
+    <div class="col-sm-12">
+        <div class="alert alert-info alert-block">
+            <h4 class="alert-heading">Info!</h4>
+            <i class="fa fa-info-circle"></i>
+            This patient does not have any completed forms!
+        </div>
+    </div>
+}

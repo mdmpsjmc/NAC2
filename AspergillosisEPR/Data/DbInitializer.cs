@@ -1,4 +1,5 @@
 ﻿using AspergillosisEPR.Models;
+using AspergillosisEPR.Models.Patients;
 using System;
 using System.Linq;
 
@@ -11,14 +12,14 @@ namespace AspergillosisEPR.Data
             context.Database.EnsureCreated();
             if (context.DiagnosisCategories.Any())
             {
-                return;  
+                return;
             }
 
             var Patients = new Patient[]
             {
             new Patient{FirstName="Carson",LastName="Alexander",DOB=DateTime.Parse("2005-09-01"),Gender="male", RM2Number="1234576RD"},
             new Patient{FirstName="Meredith",LastName="Alonso",DOB=DateTime.Parse("2002-09-01"), Gender="male", RM2Number="3454576RD"},
-            new Patient { FirstName = "Arturo", LastName = "Anand", DOB = DateTime.Parse("2003-09-01"), Gender = "male" , RM2Number = "AD23445"},
+            new Patient{FirstName = "Arturo", LastName = "Anand", DOB = DateTime.Parse("2003-09-01"), Gender = "male" , RM2Number = "AD23445"},
             new Patient{FirstName="Gytis",LastName="Barzdukas",DOB=DateTime.Parse("2002-09-01"), Gender="female",RM2Number="AD5467676"},
             new Patient{FirstName="Yan",LastName="Li",DOB=DateTime.Parse("2002-09-01"), Gender="male",RM2Number="VVV333355"},
             new Patient{FirstName="Peggy",LastName="Justice",DOB=DateTime.Parse("2001-09-01"), Gender="female",RM2Number="ASH34578" },
@@ -104,14 +105,14 @@ namespace AspergillosisEPR.Data
                 new PatientStatus{Name="Inactive"},
                 new PatientStatus{Name="Deceased"},
             };
-            foreach(var status in statuses)
+            foreach (var status in statuses)
             {
                 context.Add(status);
             }
             context.SaveChanges();
-       }
+        }
 
-        public static async void CreateDbImportTypes(AspergillosisContext context)
+        public static void CreateDbImportTypes(AspergillosisContext context)
         {
             if (context.DBImportTypes.Any())
             {
@@ -120,7 +121,7 @@ namespace AspergillosisEPR.Data
 
             var dbImportTypes = new DbImportType[]
             {
-                new DbImportType {Name = "Chris Harris - Excel Spreadsheet", ImporterClass = "CHSpreadsheetImporter" },
+                new DbImportType { Name = "Chris Harris - Excel Spreadsheet", ImporterClass = "CHSpreadsheetImporter" },
                 new DbImportType { Name = "Graham Atherton - QoL CSV file", ImporterClass = "GAQoLCSVImporter" },
                 new DbImportType { Name = "David Lowes - Excel Spreadsheet", ImporterClass = "DLSpreadsheetImporter" }
             };
@@ -129,7 +130,32 @@ namespace AspergillosisEPR.Data
             {
                 context.Add(dbImportType);
             }
-            await context.SaveChangesAsync();
+             context.SaveChanges();
         }
+
+        public static void AddIgTypes(AspergillosisContext context)
+        {
+            if (context.ImmunoglobulinTypes.Any())
+            {
+                return;
+            }
+
+            var iGType = new ImmunoglobulinType[]
+            {
+                new ImmunoglobulinType { Name = "IgA"},
+                new ImmunoglobulinType { Name = "IgD" },
+                new ImmunoglobulinType { Name = "IgE"},
+                new ImmunoglobulinType { Name = "IgG" },
+                new ImmunoglobulinType { Name = "IgM"}
+            };
+
+            foreach (var ig in iGType)
+            {
+                context.Add(ig);
+            }
+             context.SaveChanges();
+        }
+
+        
     }
 }

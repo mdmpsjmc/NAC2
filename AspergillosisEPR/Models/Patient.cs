@@ -1,4 +1,6 @@
 ﻿using AspergillosisEPR.Lib.Search;
+using AspergillosisEPR.Models.CaseReportForms;
+using AspergillosisEPR.Models.Patients;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -43,8 +45,14 @@ namespace AspergillosisEPR.Models
         public ICollection<PatientDiagnosis> PatientDiagnoses { get; set; }
         public ICollection<PatientDrug> PatientDrugs { get; set; }
         public ICollection<PatientSTGQuestionnaire> STGQuestionnaires { get; set; }
+        public ICollection<PatientImmunoglobulin> PatientImmunoglobulines { get; set; }
+        public ICollection<PatientRadiologyFinding> PatientRadiologyFindings { get; set; }
+        public ICollection<PatientMeasurement> PatientMeasurements { get; set; }
+        public ICollection<CaseReportFormResult> CaseReportFormResults { get; set; }
+        public ICollection<PatientMedicalTrial> MedicalTrials { get; set; }
 
         public PatientStatus PatientStatus { get; set; }
+       
 
         [Display(Name = "Full Name")]
         public string FullName
@@ -103,6 +111,11 @@ namespace AspergillosisEPR.Models
                 { "Date of Death", "DateOfDeath" },
                 { "Status", "PatientStatus.PatientStatusId.Select" }
             }; 
+        }
+
+        public string Initials()
+        {
+            return FirstName.Substring(0, 1) + LastName.Substring(0, 1);
         }
     }
 }

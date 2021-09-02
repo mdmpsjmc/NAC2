@@ -9,13 +9,14 @@ using Microsoft.EntityFrameworkCore;
 using AspergillosisEPR.Models.PatientViewModels;
 using Microsoft.AspNetCore.Authorization;
 using AspergillosisEPR.Helpers;
+using AspergillosisEPR.Models.Patients;
 
 namespace AspergillosisEPR.Controllers.DataTables
 {
     [Authorize]
     public class DataTablePatientsController : DataTablesController
     {
-        private new AspergillosisContext _aspergillosisContext;
+        protected new AspergillosisContext _aspergillosisContext;
 
         public DataTablePatientsController(AspergillosisContext context)
         {
@@ -24,7 +25,7 @@ namespace AspergillosisEPR.Controllers.DataTables
         }
 
         [Authorize(Roles = "Read Role, Admin Role")]
-        public IActionResult Load()
+        virtual public IActionResult Load()
         {
             Action queriesAction = () =>
             {
@@ -68,23 +69,23 @@ namespace AspergillosisEPR.Controllers.DataTables
                             _list = _list.Where(p => p.PrimaryDiagnosis.Contains(partialSearch)).ToList();
                             break;
                         case 2:
-                            _list = _list.Where(p => p.FirstName.Contains(partialSearch)).ToList();
+                            _list = _list.Where(p => p.FirstName.ToLower().Contains(partialSearch.ToLower())).ToList();
                             break;
                         case 3:
-                            _list = _list.Where(p => p.LastName.Contains(partialSearch)).ToList();
+                            _list = _list.Where(p => p.LastName.ToLower().Contains(partialSearch.ToLower())).ToList();
                             break;
                         case 4:
-                            _list = _list.Where(p => p.Gender == partialSearch).ToList();
+                            _list = _list.Where(p => p.Gender.ToString().ToLower() == partialSearch.ToLower()).ToList();
                             break;
                         case 5:
-                            _list = _list.Where(p => p.DOB.ToString().Contains(partialSearch)).ToList();
+                            _list = _list.Where(p => DateTimeOffset.FromUnixTimeSeconds(long.Parse(p.DOB.ToString())).UtcDateTime.ToString().Contains(partialSearch)).ToList();
                             break;
                     }
                 }
             }
         }
 
-        private void AppendDiagnosesToPatients(List<PatientDiagnosis> patientDiagnoses)
+        protected void AppendDiagnosesToPatients(List<PatientDiagnosis> patientDiagnoses)
         {
             foreach (var patient in _list)
             {

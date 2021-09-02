@@ -21,9 +21,16 @@ namespace AspergillosisEPR
                     var context = services.GetRequiredService<AspergillosisContext>();
                     DbInitializer.Initialize(context);
                     DbInitializer.AddDefaultPatientStatuses(context);
-                    DbInitializer.CreateDbImportTypes(context);
+                    DbInitializer.CreateDbImportTypes(context);                
+                    DbInitializer.AddIgTypes(context);
+                    RadiologyDataInitializer.AddRadiologyModels(context);
+                    CaseReportFormsDataInitializer.AddCaseReportFormsModels(context);
+                    QoLExcelImportType.Seed(context);
+                    IGgEPRImportTypeSeed.Seed(context);
                     var context2 = services.GetRequiredService<ApplicationDbContext>();
-                    AppDbInitializer.Iniitalize(context2);
+                    AppDbInitializer.Initialize(context2);
+                    CaseReportFormsDataInitializer.AddSelectFieldTypes(context);
+                    MedicalTiralsDataInitializer.AddMedicalTrialsModels(context);
                 }
                 catch (Exception ex)
                 {

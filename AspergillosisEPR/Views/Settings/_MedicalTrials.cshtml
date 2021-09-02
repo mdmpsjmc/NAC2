@@ -1,0 +1,37 @@
+﻿<div class="jarviswidget" id="wid-id-7">
+
+    <header role="heading">
+
+        <ul class="nav nav-tabs pull-left in">
+            <li class="active">
+                <a data-toggle="tab" href="#hr1" aria-expanded="false"> 
+                <i class="fa fa-lg fa-arrow-circle-o-down"></i> 
+                <span class="hidden-mobile hidden-tablet"> Medical Trials Options </span> </a>
+            </li>
+        </ul>
+    </header>
+    <div>
+
+        <div class="widget-body">
+            <div class="tab-content">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a href="#trials" data-toggle="tab" data-parent-tab="medical-trials">Trials</a>
+                        </li>
+                        <li class="">
+                            <a href="#investigators" data-toggle="tab" data-parent-tab="medical-trials">Principal Investigators</a>
+                        </li>                  
+                    </ul>
+                    <div class="tab-content padding-10">
+                        <div class="tab-pane active in" id="trials">
+                            @Html.Partial("/Views/Settings/MedicalTrials/_MedicalTrials.cshtml")
+                        </div>
+                        <div class="tab-pane fade" id="investigators">
+                          @Html.Partial("/Views/Settings/MedicalTrials/_PrincipalInvestigators.cshtml")
+                        </div>                     
+                    </div>
+                </div>
+
+        </div>
+    </div>
+</div>

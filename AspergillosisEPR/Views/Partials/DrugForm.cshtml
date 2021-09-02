@@ -1,5 +1,5 @@
 ﻿@using HtmlHelpers.BeginCollectionItemCore;
-@model AspergillosisEPR.Models.PatientDrug;
+@model AspergillosisEPR.Models.Patients.PatientDrug;
 @using (Html.BeginCollectionItem("Drugs"))
 {
     <div class="drug-row">
@@ -8,6 +8,7 @@
                 <label class="select">
                     <label asp-for="DrugId" class="select">
                         @Html.DropDownListFor(m => m.DrugId, (SelectList)ViewBag.DrugId, "Select Drug")
+                        <i></i>
                         <span asp-validation-for="DrugId" class="text-danger"></span>
                     </label>
                 </label>

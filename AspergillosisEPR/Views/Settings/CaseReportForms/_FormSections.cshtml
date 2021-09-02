@@ -1,0 +1,22 @@
+﻿@model AspergillosisEPR.Models.SettingsViewModels.SettingsViewModel
+<div class="table-responsive">
+    @if (User.IsInRole("Create Role") || User.IsInRole("Admin Role"))
+    {
+        <div class="button">
+            <a href="@Url.Action("New", "CaseReportFormSections" )" class="btn btn-success add-crf-item disable-default" data-klass="CaseReportFormSection" data-tab="case-report-forms-section">
+                <i class="fa fa-plus"></i> 
+                Add New Form Section
+            </a>
+        </div>
+    }
+    <table class="table table-bordered table-hover" id="case_report_forms_sections_datatable" data-url="/DataTableCaseReportFormSections/Load" style="width: 100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Fields</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>

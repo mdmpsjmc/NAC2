@@ -12,6 +12,8 @@ using AspergillosisEPR.Models;
 using System;
 using AspergillosisEPR.Models.PatientViewModels;
 using AspergillosisEPR.Lib.Search;
+using AspergillosisEPR.Lib;
+using AspergillosisEPR.Lib.CaseReportForms;
 
 namespace AspergillosisEPR.Controllers
 {
@@ -19,25 +21,28 @@ namespace AspergillosisEPR.Controllers
     public class PartialsController : Controller
     {
         private readonly AspergillosisContext _context;
+        private readonly DropdownListsResolver _listResolver;
+        private readonly CaseReportFormsDropdownResolver _caseReportFormListResolver;
 
         public PartialsController(AspergillosisContext context)
         {
-
+            _listResolver = new DropdownListsResolver(context, ViewBag);
+            _caseReportFormListResolver = new CaseReportFormsDropdownResolver(context);
             _context = context;
         }
         [Authorize(Roles ="Create Role, Admin Role")]
         public IActionResult DiagnosisForm()
         {
-            PopulateDiagnosisCategoriesDropDownList();
-            PopulateDiagnosisTypeDropDownList();
+            _listResolver.PopulateDiagnosisCategoriesDropDownList();
+            _listResolver.PopulateDiagnosisTypeDropDownList();
             return PartialView();
         }
 
         [Authorize(Roles = "Create Role, Admin Role")]
         public IActionResult DrugForm()
         {
-            PopulateDrugsDropDownList();
-            PopulateSideEffectsDropDownList();
+            ViewBag.DrugId = _listResolver.DrugsDropDownList();
+            ViewBag.SideEffects = _listResolver.PopulateSideEffectsDropDownList(null);
             return PartialView();
         }
 
@@ -47,11 +52,31 @@ namespace AspergillosisEPR.Controllers
             return PartialView();
         }
 
+        [Authorize(Roles = "Create Role, Admin Role")]
+        public IActionResult IgForm()
+        {
+            ViewBag.ImmunoglobulinTypeId = _listResolver.ImmunoglobinTypesDropdownList();
+            return PartialView();
+        }
+
+        [Authorize(Roles = "Create Role, Admin Role")]
+        public IActionResult RadiologyForm()
+        {
+
+            ViewBag.RadiologyTypeId = _listResolver.PopulateRadiologyDropdownList("RadiologyType");
+            ViewBag.ChestLocationId = _listResolver.PopulateRadiologyDropdownList("ChestLocation");
+            ViewBag.ChestDistributionId = _listResolver.PopulateRadiologyDropdownList("ChestDistribution");
+            ViewBag.GradeId = _listResolver.PopulateRadiologyDropdownList("Grade");
+            ViewBag.TreatmentResponseId = _listResolver.PopulateRadiologyDropdownList("TreatmentResponse");
+            ViewBag.FindingId = _listResolver.PopulateRadiologyDropdownList("Finding");
+            return PartialView();
+        }
+
         [Authorize(Roles = "Update Role, Admin Role")]
         public IActionResult EditDiagnosisForm()
         {
-            PopulateDiagnosisCategoriesDropDownList();
-            PopulateDiagnosisTypeDropDownList();
+            _listResolver.PopulateDiagnosisCategoriesDropDownList();
+            _listResolver.PopulateDiagnosisTypeDropDownList();
             ViewBag.Index = (string)Request.Query["index"];
             return PartialView();
         }
@@ -59,8 +84,8 @@ namespace AspergillosisEPR.Controllers
         [Authorize(Roles = "Update Role, Admin Role")]
         public IActionResult EditDrugForm()
         {
-            PopulateDrugsDropDownList();
-            PopulateSideEffectsDropDownList();
+            ViewBag.DrugId = _listResolver.DrugsDropDownList();
+            ViewBag.SideEffects = _listResolver.PopulateSideEffectsDropDownList(null);
             ViewBag.Index = (string)Request.Query["index"];
             return PartialView();
         }
@@ -72,8 +97,27 @@ namespace AspergillosisEPR.Controllers
             return PartialView();
         }
 
+        [Authorize(Roles = "Update Role, Admin Role")]
+        public IActionResult EditIgForm()
+        {
+            ViewBag.Index = (string)Request.Query["index"];
+            ViewBag.ImmunoglobulinTypeId = _listResolver.ImmunoglobinTypesDropdownList();
+            return PartialView();
+        }
 
-        [Authorize(Roles = "Read Role")]
+        [Authorize(Roles = "Update Role, Admin Role")]
+        public IActionResult EditRadiologyForm()
+        {
+            ViewBag.Index = (string)Request.Query["index"];
+            ViewBag.RadiologyTypeId = _listResolver.PopulateRadiologyDropdownList("RadiologyType");
+            ViewBag.ChestLocationId = _listResolver.PopulateRadiologyDropdownList("ChestLocation");
+            ViewBag.ChestDistributionId = _listResolver.PopulateRadiologyDropdownList("ChestDistribution");
+            ViewBag.GradeId = _listResolver.PopulateRadiologyDropdownList("Grade");
+            ViewBag.TreatmentResponseId = _listResolver.PopulateRadiologyDropdownList("TreatmentResponse");
+            ViewBag.FindingId = _listResolver.PopulateRadiologyDropdownList("Finding");
+            return PartialView();
+        }
+
         public IActionResult SearchPartial()
         {
             ViewBag.Index = (string)Request.Query["index"];
@@ -85,11 +129,14 @@ namespace AspergillosisEPR.Controllers
             return PartialView(searchVm);
         }
 
-        [Authorize(Roles = "Read Role")]
         public IActionResult CriteriaPartial()
         {
             string klassName = Request.Query["searchClass"];
-            Type type = Type.GetType("AspergillosisEPR.Models." + klassName);
+            Type type = Type.GetType("AspergillosisEPR.Models.Patients." + klassName);
+            if (type == null)
+            {
+                type = Type.GetType("AspergillosisEPR.Models." + klassName);
+            }
             var searchVm = new PatientSearchViewModel();
             searchVm.Index = (string) Request.Query["index"];
             dynamic instance = Activator.CreateInstance(type);
@@ -98,7 +145,6 @@ namespace AspergillosisEPR.Controllers
             return PartialView(searchVm);
         }
 
-        [Authorize(Roles = "Read Role")]
         public IActionResult SearchCriteria()
         {
             var searchVm = new PatientSearchViewModel();
@@ -107,67 +153,62 @@ namespace AspergillosisEPR.Controllers
             return PartialView(searchVm);
         }
 
-        [Authorize(Roles ="Read Role")]
         public IActionResult SearchSelectPartial()
         {
             string klass = Request.Query["klass"];
             ViewBag.Index = (string)Request.Query["index"];
+            string field = Request.Query["field"];
             switch (klass)
             {
                 case "DrugId":
-                    PopulateDrugsDropDownList();
+                    ViewBag.SearchSelect = ViewBag.DrugId = _listResolver.DrugsDropDownList();
                     break;
                 case "DiagnosisTypeId":
-                    PopulateDiagnosisTypeDropDownList();
+                    _listResolver.PopulateDiagnosisTypeDropDownList();
                     break;
                 case "DiagnosisCategoryId":
-                    PopulateDiagnosisCategoriesDropDownList();
+                    _listResolver.PopulateDiagnosisCategoriesDropDownList();
                     break;
                 case "PatientStatusId":
-                    PopulatePatientStatusesDropDownList();
+                    _listResolver.PopulatePatientStatusesDropDownList();
+                    break;
+                case "GradeId":
+                case "TreatmentResponseId":
+                case "ChestLocationId":
+                case "ChestDistributionId":
+                case "RadiologyTypeId":
+                case "FindingId":
+                    var radiologyCollection = klass.Replace("Id", String.Empty);
+                    ViewBag.SearchSelect = _listResolver.PopulateRadiologyDropdownList(radiologyCollection);
                     break;
             }
             return PartialView();
         }
 
-        private void PopulatePatientStatusesDropDownList()
+        public IActionResult CaseReportFormModal()
         {
-            var statuses = from se in _context.PatientStatuses
-                           orderby se.Name
-                           select se;
-            ViewBag.SearchSelect = new SelectList(statuses, "ID", "Name");
+            var gropupedCategoriesList = _caseReportFormListResolver
+                                                    .PopulateCRFGroupedCategoriesDropdownList();
+            ViewBag.CaseReportForms = gropupedCategoriesList;
+            ViewBag.Index = (string)Request.Query["index"];
+            return PartialView();
         }
 
-        private void PopulateDiagnosisCategoriesDropDownList(object selectedCategory = null)
+        public IActionResult PatientMedicalTrialForm()
         {
-            var categoriesQuery = from d in _context.DiagnosisCategories
-                                  orderby d.CategoryName
-                                  select d;
-            ViewBag.SearchSelect = ViewBag.DiagnosisCategoryId = new SelectList(categoriesQuery.AsNoTracking(), "ID", "CategoryName", selectedCategory);
+            ViewBag.MedicalTrialsIds = _listResolver.PouplateMedicalTrialsDropdownList();
+            ViewBag.PatientMedicalTrialStatusesIds = _listResolver.PopulatePatientMedicalTrialsStatusesDropdownList();
+            return PartialView();
         }
 
-        private void PopulateDiagnosisTypeDropDownList(object selectedDiagnosis = null)
-        {
-            var diagnosisTypesQuery = from d in _context.DiagnosisTypes
-                                      orderby d.Name
-                                      select d;
-            ViewBag.SearchSelect = ViewBag.DiagnosisTypeId = new SelectList(diagnosisTypesQuery.AsNoTracking(), "ID", "Name", selectedDiagnosis);
-        }
 
-        private void PopulateDrugsDropDownList(object selectedDrug = null)
+        [Authorize(Roles = "Update Role, Admin Role")]
+        public IActionResult EditPatientMedicalTrialForm()
         {
-            var drugsQuery = from d in _context.Drugs
-                                      orderby d.Name
-                                      select d;
-            ViewBag.SearchSelect = ViewBag.DrugId = new SelectList(drugsQuery.AsNoTracking(), "ID", "Name", selectedDrug);
-        }
-
-        private void PopulateSideEffectsDropDownList(object selectedIds = null)
-        {
-            var sideEffects = from se in _context.SideEffects
-                              orderby se.Name
-                              select se;
-            ViewBag.SideEffects = new MultiSelectList(sideEffects, "ID", "Name");
+            ViewBag.Index = (string)Request.Query["index"];
+            ViewBag.MedicalTrialsIds = _listResolver.PouplateMedicalTrialsDropdownList();
+            ViewBag.PatientMedicalTrialStatusesIds = _listResolver.PopulatePatientMedicalTrialsStatusesDropdownList();
+            return PartialView();
         }
 
         private SelectList CriteriaClassesDropdownList()
@@ -185,6 +226,7 @@ namespace AspergillosisEPR.Controllers
             var patient = new Patient();
             return ViewBag.PatientFields = new SelectList(patient.SearchableFields(), "Value", "Key", "RM2Number");
         }
+
     }
 
 

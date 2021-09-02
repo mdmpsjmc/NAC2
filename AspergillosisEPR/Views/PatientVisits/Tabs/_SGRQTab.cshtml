@@ -1,0 +1,16 @@
+﻿@using AspergillosisEPR.Models.Patients;
+@using AspergillosisEPR.Helpers
+@model AspergillosisEPR.Models.PatientViewModels.NewPatientVisitViewModel
+
+@if (User.IsInRole("Create Role") || User.IsInRole("Admin Role"))
+{
+    <a href="@Url.Action("New", "PatientSTGQuestionnaires")" class="btn btn-success add-stg-questionnaire add-new-patient-partial disable-default" data-visible-row="div.sgrq-row:visible" data-insert-into-class="div.sgrq-form" style="padding: 5px;margin-top: 15px; margin-bottom: 10px">
+        <i class="fa fa-plus"></i>
+        <span>
+            <strong>Add entry</strong>
+        </span>
+    </a>
+}
+<div id="sgrq-data">
+    @Html.Partial("/Views/PatientSTGQuestionnaires/_List.cshtml", Model.STGQuestionnaires.OrderByDescending(q => q.DateTaken).ToList())
+</div>

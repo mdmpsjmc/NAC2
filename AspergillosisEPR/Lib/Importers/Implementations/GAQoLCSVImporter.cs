@@ -1,5 +1,6 @@
 ﻿using AspergillosisEPR.Data;
 using AspergillosisEPR.Models;
+using AspergillosisEPR.Models.Patients;
 using CsvHelper;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -17,6 +18,8 @@ namespace AspergillosisEPR.Lib.Importers.Implementations
     {
         private static string RM2NUMBER = "Field4";
         private static string DATE_TAKEN = "Field6";
+        private static string WEIGHT = "Field8";
+        private static string HEIGHT = "Field10";
         private static string SYMPTOM_SCORE = "Field119";
         private static string IMPACT_SCORE = "Field120";
         private static string ACTIVITY_SCORE = "Field121";
@@ -54,8 +57,10 @@ namespace AspergillosisEPR.Lib.Importers.Implementations
                     var rm2Number = GetRM2Number(record);
                     var patient = GetPatientByRM2Number(rm2Number);
                     if (patient == null) continue;
-                    BuildPatientSTGQuestionnaire(patient, record);
+                    var sgrquestionnaire = BuildPatientSTGQuestionnaire(patient, record);
+                    BuildPatientMeasurement(patient, sgrquestionnaire.DateTaken, record);
                 }
+                _context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -81,33 +86,58 @@ namespace AspergillosisEPR.Lib.Importers.Implementations
 
         private PatientSTGQuestionnaire BuildPatientSTGQuestionnaire(Patient patient, IDictionary record)
         {
-            var stgQuestionnaire = new PatientSTGQuestionnaire();
-            stgQuestionnaire.PatientId = patient.ID;
-            stgQuestionnaire.SymptomScore = decimal.Parse((string) record[SYMPTOM_SCORE]);
-            stgQuestionnaire.ImpactScore = decimal.Parse((string) record[IMPACT_SCORE]);
-            stgQuestionnaire.ActivityScore = decimal.Parse((string) record[ACTIVITY_SCORE]);
-            stgQuestionnaire.TotalScore = decimal.Parse((string) record[TOTAL_SCORE]);
+            var sgrquestionare = new PatientSTGQuestionnaire();
+            sgrquestionare.PatientId = patient.ID;
+            sgrquestionare.SymptomScore = decimal.Parse((string) record[SYMPTOM_SCORE]);
+            sgrquestionare.ImpactScore = decimal.Parse((string) record[IMPACT_SCORE]);
+            sgrquestionare.ActivityScore = decimal.Parse((string) record[ACTIVITY_SCORE]);
+            sgrquestionare.TotalScore = decimal.Parse((string) record[TOTAL_SCORE]);
             string dateTaken = (string)record[DATE_TAKEN];
-            if (patient.RM2Number.Equals("4331330"))
-            {
-                Console.WriteLine(dateTaken);
-            }
             try
             {
-                stgQuestionnaire.DateTaken = DateTime.ParseExact(dateTaken, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                sgrquestionare.DateTaken = DateTime.ParseExact(dateTaken, "yyyy-MM-dd", CultureInfo.InvariantCulture);
             } catch (FormatException)
             {
                 try
                 {
-                    stgQuestionnaire.DateTaken = Convert.ToDateTime(dateTaken);
+                    sgrquestionare.DateTaken = Convert.ToDateTime(dateTaken);
                 } catch (FormatException)
                 {
                     Console.WriteLine(dateTaken);
                 }
                 
-            }           
-            if (stgQuestionnaire.IsValid()) Imported.Add(stgQuestionnaire);
-            return stgQuestionnaire;
+            }
+            _context.Entry(patient).Collection(p => p.STGQuestionnaires).Load();
+            var dates = patient.STGQuestionnaires.Select(sgrq => sgrq.DateTaken.Date).ToList();
+            var existingDbDates = dates.FindAll(d => d.Date == sgrquestionare.DateTaken.Date);
+            if (existingDbDates.Count > 0) return sgrquestionare;
+            if (sgrquestionare.IsValid())
+            {
+                Imported.Add(sgrquestionare);
+            }
+            return sgrquestionare;
+        }
+
+        private void BuildPatientMeasurement(Patient patient, DateTime dateTaken, IDictionary record)
+        {
+            string csvHeight = (string)record[HEIGHT];
+            string csvWeight = (string)record[WEIGHT];
+            if (!string.IsNullOrEmpty(csvHeight) || !string.IsNullOrEmpty(csvHeight))
+            {
+                decimal height, weight;
+                decimal.TryParse(csvHeight, out height);
+                decimal.TryParse(csvWeight, out weight);
+                if (height != 0 || weight != 0)
+                {
+                    var measurement = new PatientMeasurement();
+                    measurement.Weight = weight;
+                    measurement.Height = height;
+                    measurement.PatientId = patient.ID;
+                    measurement.DateTaken = dateTaken;
+                    _context.PatientMeasurements.Add(measurement);
+                }               
+            }
+          
         }
 
         private Patient GetPatientByRM2Number(string rm2Nmber)

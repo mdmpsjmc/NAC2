@@ -1,0 +1,70 @@
+﻿@model AspergillosisEPR.Models.PatientViewModels.PatientDetailsViewModel
+
+@{
+    Layout = "~/Views/Shared/_PdfLayout.cshtml";
+    ViewData["Title"] = Model.Patient.FullName + " Details";
+}
+
+@if (Model.ShowDetails)
+{
+    <h2>Demographic info</h2>
+    @Html.Partial("/Views/Patients/Details/Details.cshtml")
+}
+else
+{
+    <h2><strong>Patient Id: @(Model.Patient.ID)</strong></h2>
+}
+
+@if (Model.ShowDiagnoses)
+{
+    <h2>Diagnosis</h2>
+    @Html.Partial("/Views/Patients/Details/Diagnosis.cshtml")
+}
+@if (Model.ShowDrugs)
+{
+    <h2>Drugs monitoring</h2>
+  @Html.Partial("/Views/Patients/Details/Drugs.cshtml")
+}
+
+@if (Model.ShowSGRQ)
+{
+    <h2>SGRQ - Saint Georges Respiratory Questionnaire</h2>
+        <div style="width: 1000px; height: 600px; margin-bottom: 20px">
+             <img width="1000" height="600" src="/Files/Exported/PDF/@(Model.SgrqImageChartFile).png" />
+        </div>
+        @Html.Partial("/Views/Patients/Details/STGQuestionnaire.cshtml")
+}
+@if (Model.ShowIg && Model.IgCharts != null)
+{       
+     <h2>Immunoglobuline Levels</h2>
+     <div id="ig-charts" style="width: 1000px; height: @(300*Model.IgCharts.Count)px; margin-bottom: 20px">
+         @foreach (var igChart in Model.IgCharts)
+         {
+            <img width="600" height="250" src="/Files/Exported/PDF/@(igChart.FileName).png" />            
+         }
+     </div>
+     @Html.Partial("/Views/Patients/Details/Ig.cshtml")
+}
+@if (Model.ShowRadiology)
+{
+   <h2>Radiology Appearances</h2>
+   @Html.Partial("/Views/Patients/Details/Radiology.cshtml")
+}
+
+@if (Model.ShowWeight)
+{
+    <h2>Patients Weight</h2>
+    @Html.Partial("/Views/Patients/Details/Measurements.cshtml")
+}
+
+@if (Model.ShowCaseReportForms)
+{
+    <h2>Case Report Forms</h2>
+    @Html.Partial("/Views/Patients/CaseReportForms/_PdfForms.cshtml")
+}
+
+@if (Model.ShowTrials)
+{
+    <h2>Enrolled Trials</h2>
+    @Html.Partial("/Views/Patients/MedicalTrials/_PdfDetails.cshtml")
+}

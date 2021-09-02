@@ -1,0 +1,19 @@
+﻿@model AspergillosisEPR.Models.PatientViewModels.NewPatientVisitViewModel
+@using AspergillosisEPR.Helpers
+@using AspergillosisEPR.Models.Patients;
+
+@if (User.IsInRole("Create Role") || User.IsInRole("Admin Role"))
+{
+    <a href="@Url.Action("New", "PatientsImmunoglobulines")" class="btn btn-success add-ig add-new-patient-partial disable-default" data-visible-row="div.ig-row:visible" data-insert-into-class="div.ig-data" style="padding: 5px;margin-top: 15px; margin-bottom: 10px">
+        <i class="fa fa-plus"></i>
+        <span>
+            <strong>Add entry</strong>
+        </span>
+    </a>
+}
+
+
+
+<div id="ig-data">
+    @Html.Partial("/Views/PatientsImmunoglobulines/_List.cshtml", Model.PatientImmunoglobulines.OrderByDescending(q => q.DateTaken).ToList())
+</div>

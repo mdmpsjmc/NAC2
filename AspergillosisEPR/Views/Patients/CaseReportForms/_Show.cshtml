@@ -1,0 +1,60 @@
+﻿@model AspergillosisEPR.Models.CaseReportForms.CaseReportFormResult;
+@using AspergillosisEPR.Models.CaseReportForms.ViewModels;
+@{
+    var globalCursor = 0;
+}
+<fieldset data-index="@((string) ViewBag.Index)">
+    <header>
+        <strong>
+            @Model.Form.Name
+        </strong>
+    </header>
+    <form class="smart-form">
+        <div class="row">
+            <section class="col col-4 label-render">
+                <label>Date Taken</label>
+            </section>
+            <section class="col col-5">
+                 <label>   
+                    <input íd="CaseReportFormResult_@((string) ViewBag.Index)__DateTaken" name="CaseReportFormResult[@((string) ViewBag.Index)].DateTaken" palceholder="Enter Report Date" class="datepicker form-control" type="text" value="">
+                </label>
+            </section>
+            @Html.Hidden("CaseReportFormResult[" + (string) ViewBag.Index + "].CaseReportFormId", Model.CaseReportFormId)
+            @Html.Hidden("CaseReportFormResult[" + (string) ViewBag.Index + "].CaseReportFormCategoryId", Model.CaseReportFormCategoryId)
+        </div>
+        @foreach (var fsection in Model.Form.Sections)
+         {
+            <fieldset>
+                <h3>@fsection.Section.Name</h3>
+                @for (int cursor = 0; cursor < fsection.Section.CaseReportFormResultFields.Count; cursor++)
+                {
+                    var field = fsection.Section.CaseReportFormResultFields.ToList()[cursor];
+                    var fieldVm = new CaseReportFormFieldViewModel();
+                    fieldVm.Field = field;
+                    fieldVm.Index = globalCursor.ToString();
+                    fieldVm.FormIndex = (string)ViewBag.Index;
+                    @Html.Partial("/Views/CaseReportForms/CaseReportFormFieldTypes/FieldTypes/_"
+                                                + field.CaseReportFormFieldType.FieldPartial() + ".cshtml", fieldVm)
+                    globalCursor++;
+                }
+            </fieldset>
+         }
+        @for (int cursor = 0; cursor < Model.Form.Fields.Count(); cursor++)
+        {
+            var formField = Model.Form.Fields.ToList()[cursor];
+            var formFieldVm = new CaseReportFormFieldViewModel();
+            formFieldVm.Field = formField;
+            formFieldVm.Index = globalCursor.ToString();
+            formFieldVm.FormIndex = (string)ViewBag.Index;
+            @Html.Partial("/Views/CaseReportForms/CaseReportFormFieldTypes/FieldTypes/_"
+                            + formField.CaseReportFormFieldType.FieldPartial() + ".cshtml", formFieldVm);
+            globalCursor++;
+         }
+    </form>
+    <div class="row">
+        <a href="javascript:void(0)" class="btn btn-danger remove-new-crf pull-right btn-lg" data-index="@((string) ViewBag.Index)" data-what="Case report form" data-toggle="tooltip" data-title="Remove form" style="padding: 5px">
+            <i class="fa fa-trash"></i>
+        </a>
+    </div>
+</fieldset>     
+              

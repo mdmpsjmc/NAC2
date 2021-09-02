@@ -322,5 +322,12 @@ namespace AspergillosisEPR.Helpers
 
             return false;
         }
+
+        public static string TruncateLongString(this string str, int maxLength)
+        {
+            return str.Substring(0, Math.Min(str.Length, maxLength));
+        }
+
+
     }
 }

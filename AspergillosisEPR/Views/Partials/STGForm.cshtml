@@ -1,4 +1,4 @@
-﻿@model AspergillosisEPR.Models.PatientSTGQuestionnaire
+﻿@model AspergillosisEPR.Models.Patients.PatientSTGQuestionnaire
 @using HtmlHelpers.BeginCollectionItemCore;
 @using (Html.BeginCollectionItem("STGQuestionnaires"))
 {
@@ -6,6 +6,7 @@
     <div class="row">
         <section class="col col-4">
             <label class="input" asp-for="DateTaken">
+                <i class="icon-append fa fa-calendar"></i>
                 <input asp-for="DateTaken" placeholder="Date Taken" class="datepicker"/>
             </label>
         </section>

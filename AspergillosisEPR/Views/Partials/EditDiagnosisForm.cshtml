@@ -1,11 +1,12 @@
 ﻿@using HtmlHelpers.BeginCollectionItemCore;
-@model AspergillosisEPR.Models.PatientDiagnosis
+@model AspergillosisEPR.Models.Patients.PatientDiagnosis
 <div class="diagnosis-row">
         <fieldset>
             <div class="row">
                 <label class="select">
                     <label asp-for="DiagnosisCategoryId" class="select">
                         @Html.DropDownList("Diagnoses[" + (string)ViewBag.Index + "].DiagnosisCategoryId", (SelectList)ViewBag.DiagnosisCategoryId, "Select Diagnosis Category")
+                        <i></i>
                         <span asp-validation-for="DiagnosisCategoryId" class="text-danger"></span>
                     </label>
 
@@ -15,6 +16,7 @@
                 <label class="select">
                     <label asp-for="DiagnosisTypeId" class="select">
                         @Html.DropDownList("Diagnoses[" + (string)ViewBag.Index + "].DiagnosisTypeId", (SelectList)ViewBag.DiagnosisTypeId, "Select Diagnosis")
+                        <i></i>
                         <span asp-validation-for="DiagnosisCategoryId" class="text-danger"></span>
                     </label>
                 </label>

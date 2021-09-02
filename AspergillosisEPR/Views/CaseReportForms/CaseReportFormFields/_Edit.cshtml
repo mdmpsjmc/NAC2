@@ -1,0 +1,55 @@
+﻿@model AspergillosisEPR.Models.CaseReportForms.ViewModels.CaseReportFormFieldViewModel
+@using HtmlHelpers.BeginCollectionItemCore;
+
+<div class="field-row">
+    <fieldset>
+        <div class="row">
+            <section class="col col-6">
+                <label class="input">
+                    <input name="Fields[@Model.Index].Label" placeholder="Enter field label" value="@Model.Field.Label"/>
+                </label>
+            </section>
+            <section class="col col-6">
+                <label class="select">
+                     @Html.Hidden("Fields[" + Model.Index + "].ID", Model.Field.ID)
+                     @Html.Hidden("Fields[" + Model.Index + "].CaseReportFormSectionId", Model.Field.CaseReportFormSectionId)
+                     @Html.DropDownList("Fields[" + Model.Index + "].CaseReportFormFieldTypeId", 
+                                       (SelectList)ViewBag.FieldTypeIds[Int32.Parse(Model.Index)], 
+                                       "Select Field Type")
+                     <i></i>
+                     <span asp-validation-for="Field.CaseReportFormFieldTypeId" class="text-danger"></span>
+                </label>
+            </section>
+        </div>
+        <div class="row">
+            <h4>Optional (for checkbox and select/multiselect types)</h4>
+            <section class="col col-12 col-md-12 col-xs-12">
+                <label class="select">                    
+                    @Html.DropDownList("Fields[" + Model.Index + "].OptionGroupsIds", 
+                                      (SelectList)ViewBag.OptionGroupsIds[Int32.Parse(Model.Index)], 
+                                      "Select Option Group", 
+                                      new { @class = "option-group", @data_index = Model.Index })
+                    <i></i>
+                    <span asp-validation-for="Field.SelectedOptionsIds" class="text-danger"></span>
+                </label>
+            </section>
+            <section class="col col-12 col-md-12 col-xs-12 options" data-index="@Model.Index">
+
+                @if (Model.Field.Options.Any())
+                {
+                    <label>Select available dropdown options</label>
+                    @Html.DropDownList("Fields[" + Model.Index + "].SelectedOptionsIds", 
+                                       (MultiSelectList)ViewBag.FieldOptions[Int32.Parse(Model.Index)],
+                                       new { @multiple = "multiple", @data_index = Model.Index })
+
+                }
+            </section>
+
+        </div>
+        <div class="row">
+            <a href="@Url.Action("Delete", "CaseReportFormFields", new { id = Model.Field.ID })" class="btn btn-danger remove-existing-item pull-right btn-lg" data-what="Case Report Form Field" data-toggle="tooltip" data-title="Remove this field?" style="padding: 5px">
+                <i class="fa fa-trash"></i>
+            </a>
+        </div>
+    </fieldset>
+</div>
