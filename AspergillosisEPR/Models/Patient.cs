@@ -1,15 +1,18 @@
 ﻿using AspergillosisEPR.Data;
 using AspergillosisEPR.Lib;
+using AspergillosisEPR.Lib.Geodesy;
 using AspergillosisEPR.Lib.Importers.ManARTS;
+using AspergillosisEPR.Lib.PostCodes;
 using AspergillosisEPR.Lib.Search;
 using AspergillosisEPR.Models.CaseReportForms;
 using AspergillosisEPR.Models.Patients;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-
 namespace AspergillosisEPR.Models
 {
     public class Patient : ISearchable
@@ -44,6 +47,7 @@ namespace AspergillosisEPR.Models
         public DateTime? DateOfDeath { get; set; }
         public string NhsNumber { get; set; }
         public string GenericNote { get; set; }
+        [RegularExpression(@"^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])))) [0-9][A-Za-z]{2})$", ErrorMessage = "Post Code is invalid")]
         public string PostCode { get; set; }
         public double DistanceFromWythenshawe { get; set; }
 
@@ -65,7 +69,8 @@ namespace AspergillosisEPR.Models
         public ICollection<PatientHaematology> PatientHaematologies { get; set;}
         public ICollection<PatientTestResult> PatientTestResults { get; set; }
         public ICollection<PatientMRCScore> PatientMRCScores { get; set; } = new List<PatientMRCScore>();
-           
+        public ICollection<PatientICD10Diagnosis> PatientICD10Diagnoses { get; set; } = new List<PatientICD10Diagnosis>();
+
         [Display(Name = "Full Name")]
         public string FullName
         {
@@ -74,25 +79,16 @@ namespace AspergillosisEPR.Models
         public static readonly List<string> Genders = new List<string>() { "male", "female" };
 
         public int Age()
-        {
-            int age = 0;
-            int endDate = 0;
-            int endDateDayOfYear = 0;
+        {            
             if (IsAlive())
             {
-                endDate = DateTime.Now.Year;
-                endDateDayOfYear = DateTime.Now.DayOfYear;
+                var ageCalculator = new DatesCalculator(DOB, DateTime.Now);
+                return ageCalculator.Years();
             } else
             {
-                endDate = DateOfDeath.Value.Year;
-                endDateDayOfYear = DateOfDeath.Value.DayOfYear;
-            }
-            age = endDate  - DOB.Year;
-            if (endDateDayOfYear < DOB.DayOfYear)
-                age = age - 1;
-            
-            return age;
-            
+                var deathCalculator = new DatesCalculator(DOB, DateOfDeath.Value);
+                return deathCalculator.Years();
+            }                       
         }
 
         public bool IsDeceased()
@@ -121,6 +117,7 @@ namespace AspergillosisEPR.Models
                 { "RM2 Number", "RM2Number" },
                 { "Date of Birth", "DOB" },
                 { "Date of Death", "DateOfDeath" },
+                { "Distance from hospital", "DistanceFromWythenshawe" },
                 { "Status", "PatientStatus.PatientStatusId.Select" }
             }; 
         }
@@ -133,23 +130,20 @@ namespace AspergillosisEPR.Models
         public Position PatientPosition(AspergillosisContext context)
         {
             if (PostCode == null) return new Position();
-            var outcode = PostCode.Split(" ")[0];           
-            var postcode = context.UKOutwardCodes.FirstOrDefault(pc => pc.Code.Equals(outcode));
-            if (postcode == null) return new Position();
+            var dbPostCode = context.UKPostCodes.Where(pc => pc.Code.Equals(PostCode)).FirstOrDefault();
+            if (dbPostCode == null) return new Position();
             var position = new Position();
-            position.Latitude = postcode.Latitude;
-            position.Longitude = postcode.Longitude;
+            position.Latitude = Math.Round(Decimal.Parse(dbPostCode.Latitude), 6);
+            position.Longitude = Math.Round(Decimal.Parse(dbPostCode.Longitude), 6);
             return position;
         }
 
-        public void SetDistanceFromWythenshawe(AspergillosisContext context)
-        {
-             
-            var wythenshawePosition = UKOutwardCode.WythenshawePosition(context);
+        public void SetDistanceFromWythenshawe(AspergillosisContext context, ILogger logger)
+        {             
             var patientPosition = PatientPosition(context);
-            if (patientPosition.Latitude == 0 || patientPosition.Longitude == 0) return;
-
-            DistanceFromWythenshawe = new Haversine().Distance(wythenshawePosition, patientPosition, DistanceType.Miles);             
+            var distanceCalculator = new GraphhopperApi(new RestClient(GraphhopperApi.ENDPOINT), logger);
+            var distance = distanceCalculator.RequestDistance(patientPosition);
+            DistanceFromWythenshawe = (double) distance;
         }
     }
 }

@@ -94,6 +94,7 @@ namespace AspergillosisEPR.Data
         public DbSet<TestType> TestTypes { get; set; }
         public DbSet<PatientTestResult> PatientTestResult { get; set; }
         public DbSet<PatientMRCScore> PatientMRCScores { get; set; }
+        public DbSet<PatientICD10Diagnosis> PatientICD10Diagnoses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -166,12 +167,7 @@ namespace AspergillosisEPR.Data
             modelBuilder.Entity<UKOutwardCode>()
                 .Property(p => p.Latitude)
                 .HasPrecision(9, 4);
-            modelBuilder.Entity<UKPostCode>()
-               .Property(p => p.Longitude)
-               .HasPrecision(9, 4);
-            modelBuilder.Entity<UKPostCode>()
-                .Property(p => p.Latitude)
-                .HasPrecision(9, 4);
+           
 
         }
 
